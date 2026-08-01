@@ -11,6 +11,7 @@ import hashlib
 import os
 import urllib.request
 import gradio as gr
+import numpy as np
 from ultralytics import YOLO
 
 # Optionally bake a default model into the image via build arg / env var.
@@ -44,8 +45,10 @@ def get_model(model_ref: str):
 
 def run(model_ref, image, conf):
     model = get_model(model_ref)
-    results = model(image, conf=conf)
-    annotated = results[0].plot()[..., ::-1]   # BGR -> RGB
+
+    bgr = np.ascontiguousarray(image[..., ::-1])   # Gradio RGB -> Ultralytics BGR
+    results = model(bgr, conf=conf)
+    annotated = results[0].plot()[..., ::-1]        # plot() BGR -> Gradio RGB
 
     names = model.names
 
