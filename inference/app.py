@@ -45,7 +45,7 @@ def get_model(model_ref: str):
 def run(model_ref, image, conf):
     model = get_model(model_ref)
     results = model(image, conf=conf)
-    annotated = results[0].plot()  # BGR -> RGB
+    annotated = results[0].plot()[..., ::-1]   # BGR -> RGB
 
     names = model.names
 
