@@ -22,7 +22,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY detect.py app.py ./
+COPY detect.py app.py ./app
 
 # Default: CLI inference. Override --entrypoint for the web UI (see header).
 ENTRYPOINT ["python", "detect.py"]
