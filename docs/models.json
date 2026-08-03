@@ -350,14 +350,15 @@
       "download": "https://huggingface.co/lukasiktar11/road-line-segmentator/resolve/main/best.pt",
       "onnx": "https://huggingface.co/lukasiktar11/road-line-segmentator/resolve/main/best.onnx",
       "size_mb": 23.3,
-      "image_size": 640
+      "image_size": 640,
+      "image":"assets/previews/RoadLineSegmentation1.png"
     },
     {
       "id": "road-line-segmentator2",
       "name": "Road line segmentator 2",
       "summary": "Segments the road lines from the environment.",
       "base_model": "yolo26s-seg",
-      "task": "Segmentation",
+      "task": "segmentation",
       "classes": [
         "Road Lane"
       ],
@@ -378,16 +379,16 @@
     {
       "id": "road-line-segmentator3",
       "name": "Road line segmentator 3",
-      "summary": "Segments the road lines from the environment.",
+      "summary": "Segments the lines on the road from the environment. Enables to detect dashed and solid lines on the left and right side of the road.",
       "base_model": "yolo26s-seg",
-      "task": "Segmentation",
+      "task": "segmentation",
       "classes": [
         "Left Boundary -Dashed-",
         "Left Boundary -Solid-",
         "Right Boundary -Dashed-",
         "Right Boundary -Solid-"
       ],
-      "dataset": "https://universe.roboflow.com/demarcationbased-road-lane-segmentation/road-lane-instance-segmentation",
+      "dataset": "https://universe.roboflow.com/tobias-price-lane-detection-solid-and-dashed/lane-detection-segmentation-edyqp",
       "dataset_license": "CC BY 4.0",
       "metrics": {
         "mAP50": 0.924,
@@ -399,21 +400,22 @@
       "download": "https://huggingface.co/lukasiktar11/road-line-segmentator3/resolve/main/best.pt",
       "onnx": "https://huggingface.co/lukasiktar11/road-line-segmentator3/resolve/main/best.onnx",
       "size_mb": 23.3,
-      "image_size": 640
+      "image_size": 640,
+      "image":"assets/previews/RoadLineSegmentation3.png"
     },
     {
       "id": "road-line-segmentator4",
       "name": "Road line segmentator 4",
-      "summary": "Segments the road lines from the environment.",
+      "summary": "Segments the lines on the road from the environment. Enables to detect dashed and solid lines on both sides of the road.",
       "base_model": "yolo26s-seg",
-      "task": "Segmentation",
+      "task": "segmentation",
       "classes": [
         "Left Boundary -Dashed-",
         "Left Boundary -Solid-",
         "Right Boundary -Dashed-",
         "Right Boundary -Solid-"
       ],
-      "dataset": "https://universe.roboflow.com/demarcationbased-road-lane-segmentation/road-lane-instance-segmentation",
+      "dataset": "https://universe.roboflow.com/tobias-price-lane-detection-solid-and-dashed/lane-detection-segmentation-edyqp",
       "dataset_license": "CC BY 4.0",
       "metrics": {
         "mAP50": 0.914,
@@ -425,7 +427,8 @@
       "download": "https://huggingface.co/lukasiktar11/road-line-segmentator4/resolve/main/best.pt",
       "onnx": "https://huggingface.co/lukasiktar11/road-line-segmentator4/resolve/main/best.onnx",
       "size_mb": 23.3,
-      "image_size": 640
+      "image_size": 640,
+      "image":"assets/previews/RoadLineSegmentation4.png"
     }
   ]
 }
