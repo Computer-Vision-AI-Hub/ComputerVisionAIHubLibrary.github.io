@@ -1,0 +1,10 @@
+<svg width="160" height="160" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="icon-title">
+  <title id="icon-title">ComputerVisionAIHub icon</title>
+  <rect x="0" y="0" width="160" height="160" rx="36" fill="#185FA5"/>
+  <path d="M32 52 L32 38 Q32 32 38 32 L52 32" fill="none" stroke="#E6F1FB" stroke-width="8" stroke-linecap="round"/>
+  <path d="M108 32 L122 32 Q128 32 128 38 L128 52" fill="none" stroke="#E6F1FB" stroke-width="8" stroke-linecap="round"/>
+  <path d="M128 108 L128 122 Q128 128 122 128 L108 128" fill="none" stroke="#E6F1FB" stroke-width="8" stroke-linecap="round"/>
+  <path d="M52 128 L38 128 Q32 128 32 122 L32 108" fill="none" stroke="#E6F1FB" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="80" cy="80" r="26" fill="none" stroke="#9FE1CB" stroke-width="7"/>
+  <circle cx="80" cy="80" r="11" fill="#5DCAA5"/>
+</svg>

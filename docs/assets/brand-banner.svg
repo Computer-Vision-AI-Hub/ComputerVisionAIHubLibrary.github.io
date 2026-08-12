@@ -1,0 +1,22 @@
+<svg width="100%" viewBox="0 0 680 260" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>ComputerVisionAIHub banner in blue</title>
+  <desc>A deep blue banner with the aperture icon on the left, the ComputerVisionAIHub wordmark, a tagline, and decorative detection boxes on the right.</desc>
+  <rect x="20" y="20" width="640" height="220" rx="20" fill="#042C53"/>
+  <g transform="translate(56,74) scale(0.7)">
+    <rect x="0" y="0" width="160" height="160" rx="36" fill="#185FA5"/>
+    <path d="M32 52 L32 38 Q32 32 38 32 L52 32" fill="none" stroke="#E6F1FB" stroke-width="8" stroke-linecap="round"/>
+    <path d="M108 32 L122 32 Q128 32 128 38 L128 52" fill="none" stroke="#E6F1FB" stroke-width="8" stroke-linecap="round"/>
+    <path d="M128 108 L128 122 Q128 128 122 128 L108 128" fill="none" stroke="#E6F1FB" stroke-width="8" stroke-linecap="round"/>
+    <path d="M52 128 L38 128 Q32 128 32 122 L32 108" fill="none" stroke="#E6F1FB" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="80" cy="80" r="26" fill="none" stroke="#9FE1CB" stroke-width="7"/>
+    <circle cx="80" cy="80" r="11" fill="#5DCAA5"/>
+  </g>
+  <text x="192" y="128" font-size="30" font-weight="500" fill="#FFFFFF" font-family="'Space Grotesk', 'Anthropic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">ComputerVision<tspan fill="#5DCAA5">AIHub</tspan></text>
+  <text x="193" y="156" font-size="14" fill="#85B7EB" font-family="'Anthropic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">Models, datasets and tooling for visual AI</text>
+  <rect x="470" y="76" width="76" height="60" rx="4" fill="none" stroke="#378ADD" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="518" y="132" width="98" height="52" rx="4" fill="none" stroke="#5DCAA5" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="470" y="60" width="42" height="14" rx="3" fill="#378ADD"/>
+  <text x="476" y="70" font-size="9" fill="#042C53" font-family="'Anthropic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">person</text>
+  <rect x="518" y="116" width="36" height="14" rx="3" fill="#5DCAA5"/>
+  <text x="524" y="126" font-size="9" fill="#04342C" font-family="'Anthropic Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">car</text>
+</svg>

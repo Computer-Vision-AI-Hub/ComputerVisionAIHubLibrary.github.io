@@ -6,6 +6,8 @@
   <!-- CHANGE THE PLATFORM NAME HERE (and in the <title>, footer, and app.js DOCKER_IMAGE). -->
   <title>ComputerVisionAIHub — open YOLO model hub</title>
   <meta name="description" content="A community catalog of custom-trained YOLO models. Download weights or run them locally." />
+  <meta name="theme-color" content="#042C53" />
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
 
   <!-- Fonts: Space Grotesk (display) + JetBrains Mono (data). Swap these to rebrand the type. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,10 +21,9 @@
   <header class="site-header">
     <div class="wrap header-inner">
       <div class="brand">
-        <!-- The little box+tab glyph echoes the bounding-box motif used on every card. -->
-        <span class="brand-mark" aria-hidden="true"></span>
+        <img class="brand-mark" src="assets/icon.svg" alt="" aria-hidden="true" width="36" height="36" />
         <div>
-          <h1 class="brand-name">ComputerVisionAIHub</h1>
+          <h1 class="brand-name">ComputerVision<span class="accent">AIHub</span></h1>
           <p class="brand-tag">Custom-trained YOLO models, free to download and run.</p>
         </div>
       </div>
@@ -39,8 +40,8 @@
       <p>Pulls the image if it's not cached, starts the app, and serves a drag-and-drop UI on <code>localhost:7860</code>. Requires Docker.</p>
     </div>
     <div class="run launch-run">
-      <code id="launch-cmd">docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub app.py</code>
       <button class="copy-btn" id="launch-copy" data-cmd="docker run -p 7860:7860 -v $(pwd)/inference:/app  --entrypoint python docker.io/lukasiktar/computervisionaihub app.py">copy</button>
+      <code id="launch-cmd">docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub app.py</code>
     </div>
     <a class="btn primary" href="http://localhost:7860" target="_blank" rel="noopener">Open localhost:7860 →</a>
   </section>
@@ -76,5 +77,6 @@
   </footer>
 
   <script src="app.js"></script>
+
 </body>
 </html>

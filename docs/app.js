@@ -152,16 +152,16 @@ function card(m) {
     <div class="run-group">
       <span class="run-label">Model URL — paste into localhost:7860</span>
       <div class="run">
-        <code>${esc(m.download)}</code>
         <button class="copy-btn" data-cmd="${esc(m.download)}">copy</button>
+        <code>${esc(m.download)}</code>
       </div>
     </div>
 
     <div class="run-group">
       <span class="run-label">Run via CLI</span>
       <div class="run">
-        <code>${esc(runCmd)}</code>
         <button class="copy-btn" data-cmd="${esc(runCmd)}">copy</button>
+        <code>${esc(runCmd)}</code>
       </div>
     </div>
   </article>`;

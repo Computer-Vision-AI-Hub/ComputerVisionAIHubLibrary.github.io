@@ -2,27 +2,31 @@
    ComputerVisionAIHub — catalog styles
    Edit the tokens in :root to rebrand. Everything below derives
    from these. The "signature" of the design is the bounding-box
-   card frame + corner label tab (see .model-card).
+   card frame + corner label tab (see .model-card), now in the
+   brand's navy / blue / mint palette (see assets/icon.svg).
    ============================================================ */
 
 :root {
-  /* ---- palette (annotation-tool light surface) ---- */
-  --paper:    #F4F5F3;   /* page background        */
+  /* ---- palette (brand: deep navy + sky blue + mint teal) ---- */
+  --paper:    #F2F5F9;   /* page background        */
   --surface:  #FFFFFF;   /* cards                  */
-  --ink:      #14171A;   /* primary text           */
-  --ink-soft: #5B6168;   /* muted text             */
-  --line:     #E4E6E3;   /* hairlines              */
+  --ink:      #042C53;   /* primary text / brand navy (dark UI surfaces) */
+  --ink-soft: #55677E;   /* muted text             */
+  --line:     #DCE4EE;   /* hairlines              */
 
   /* ---- detection colors: used like YOLO box colors ---- */
-  --box:    #0E9F8E;     /* primary accent (teal)  */
-  --box-2:  #E8552D;     /* secondary (coral)      */
+  --box:        #185FA5; /* primary accent (brand blue)          */
+  --box-2:      #0C8567; /* secondary accent (brand mint/teal)   */
+  --box-bright: #378ADD; /* decorative highlight (glows, gradients) */
+  --mint-bright:#5DCAA5; /* bright mint for use on dark surfaces */
+  --sky:        #85B7EB; /* light blue for text on dark surfaces */
 
   /* ---- type ---- */
   --display: "Space Grotesk", system-ui, sans-serif;
   --mono:    "JetBrains Mono", ui-monospace, monospace;
   --body:    system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  --radius: 10px;
+  --radius: 12px;
   --maxw: 1100px;
 }
 
@@ -43,54 +47,48 @@ body {
 
 a { color: var(--box); }
 
-/* ============ HEADER ============ */
+/* ============ HEADER (hero) ============ */
 .site-header {
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  background: linear-gradient(135deg, #042C53 0%, #0B3D6E 60%, #103F71 100%);
 }
 .header-inner {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 24px; padding-block: 22px;
+  gap: 24px; padding-block: 26px;
 }
 .brand { display: flex; align-items: center; gap: 14px; }
 
-/* The brand mark is a tiny bounding box with a label tab — the motif in miniature. */
+/* The brand mark is the aperture icon from assets/icon.svg. */
 .brand-mark {
-  position: relative;
-  width: 30px; height: 30px;
-  border: 2.5px solid var(--box);
-  border-radius: 4px;
-  flex: none;
-}
-.brand-mark::before {
-  content: "";
-  position: absolute; top: -2.5px; left: -2.5px;
-  width: 12px; height: 6px;
-  background: var(--box);
-  border-radius: 4px 0 4px 0;
+  width: 36px; height: 36px; flex: none;
+  border-radius: 9px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.3);
 }
 
 .brand-name {
   font-family: var(--display);
   font-weight: 700; font-size: 1.45rem;
   margin: 0; letter-spacing: -0.02em;
+  color: #fff;
 }
-.brand-tag { margin: 2px 0 0; color: var(--ink-soft); font-size: 0.9rem; }
+.brand-name .accent { color: var(--mint-bright); }
+.brand-tag { margin: 2px 0 0; color: var(--sky); font-size: 0.9rem; }
 
 .ghost-btn {
   font-family: var(--mono); font-size: 0.82rem;
-  text-decoration: none; color: var(--ink);
-  border: 1px solid var(--line); border-radius: 8px;
+  text-decoration: none; color: #fff;
+  border: 1px solid rgba(255,255,255,.32); border-radius: 8px;
   padding: 9px 14px; white-space: nowrap;
-  transition: border-color .15s, color .15s;
+  transition: border-color .15s, color .15s, background-color .15s;
 }
-.ghost-btn:hover { border-color: var(--box); color: var(--box); }
+.ghost-btn:hover { border-color: var(--mint-bright); color: var(--mint-bright); background: rgba(255,255,255,.06); }
+.ghost-btn:focus-visible { outline: 2px solid var(--mint-bright); outline-offset: 1px; }
 
 /* ============ LAUNCH PANEL ============ */
 .launch-panel {
   display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
   background: var(--surface); border: 2px solid var(--ink); border-radius: var(--radius);
   padding: 18px 22px; margin-top: 24px;
+  box-shadow: 0 12px 28px -18px rgba(4,44,83,.35);
 }
 .launch-text { flex: 1 1 260px; }
 .launch-text h2 {
@@ -148,9 +146,14 @@ a { color: var(--box); }
   border-radius: var(--radius);
   padding: 26px 22px 20px;
   display: flex; flex-direction: column; gap: 14px;
-  transition: border-color .18s, transform .18s;
+  box-shadow: 0 1px 2px rgba(4,44,83,.05), 0 10px 24px -18px rgba(4,44,83,.3);
+  transition: border-color .18s, transform .18s, box-shadow .18s;
 }
-.model-card:hover { border-color: var(--box); transform: translateY(-2px); }
+.model-card:hover {
+  border-color: var(--box);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -16px rgba(24,95,165,.35);
+}
 
 /* The corner label tab — mimics YOLO stamping "class conf" on a box edge. */
 .card-tab {
@@ -234,13 +237,23 @@ a { color: var(--box); }
   padding: 9px 14px; border-radius: 8px; border: 1px solid transparent;
   transition: all .15s;
 }
-.btn.primary { background: var(--box); color: #fff; }
-.btn.primary:hover { background: color-mix(in srgb, var(--box) 85%, #000); }
+.btn.primary {
+  background: linear-gradient(135deg, var(--box), color-mix(in srgb, var(--box) 65%, var(--box-2)));
+  color: #fff;
+  box-shadow: 0 2px 10px -3px color-mix(in srgb, var(--box) 65%, transparent);
+}
+.btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--box) 70%, transparent);
+}
 .btn.secondary { background: var(--surface); color: var(--ink); border-color: var(--line); }
 .btn.secondary:hover { border-color: var(--ink); }
 .btn:focus-visible { outline: 2px solid var(--box); outline-offset: 1px; }
 
-/* copyable command / URL box, with an optional label above it */
+/* copyable command / URL box, with an optional label above it.
+   The copy button comes first in the markup and stays pinned to the
+   left edge (position: sticky) so it's visible immediately — the
+   command text scrolls underneath it instead of pushing it off-screen. */
 .run-group { display: flex; flex-direction: column; gap: 4px; }
 .run-label {
   font-family: var(--mono); font-size: 0.66rem; font-weight: 500;
@@ -249,17 +262,23 @@ a { color: var(--box); }
 .run {
   font-family: var(--mono); font-size: 0.72rem;
   background: var(--ink); color: #E6E8E6;
-  border-radius: 8px; padding: 10px 12px;
-  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  border-radius: 10px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px;
   overflow-x: auto;
 }
-.run code { white-space: nowrap; }
+.run code { white-space: nowrap; padding: 4px 8px 4px 2px; }
 .copy-btn {
+  position: sticky; left: 0; z-index: 1;
+  flex: none;
   font-family: var(--mono); font-size: 0.68rem;
-  background: transparent; color: #9aa0a6; border: 1px solid #2c3137;
-  border-radius: 6px; padding: 3px 8px; cursor: pointer; flex: none;
+  background: color-mix(in srgb, var(--ink) 92%, #000 8%);
+  color: #C7CDD6; border: 1px solid rgba(255,255,255,.16);
+  border-radius: 6px; padding: 5px 10px; cursor: pointer;
+  box-shadow: 10px 0 10px -6px var(--ink);
 }
-.copy-btn:hover { color: #fff; border-color: #4a5057; }
+.copy-btn:hover { color: #fff; border-color: rgba(255,255,255,.35); }
+.copy-btn:focus-visible { outline: 2px solid var(--mint-bright); outline-offset: 1px; }
 
 /* ============ STATE (empty / error) ============ */
 .state {
