@@ -40,8 +40,8 @@
       <p>Pulls the image if it's not cached, starts the app, and serves a drag-and-drop UI on <code>localhost:7860</code>. Requires Docker.</p>
     </div>
     <div class="run launch-run">
-      <button class="copy-btn" id="launch-copy" data-cmd="docker run -p 7860:7860 -v $(pwd)/inference:/app  --entrypoint python docker.io/lukasiktar/computervisionaihub app.py">copy</button>
-      <code id="launch-cmd">docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub app.py</code>
+      <button class="copy-btn" id="launch-copy" data-cmd="docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py">copy</button>
+      <code id="launch-cmd">docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py</code>
     </div>
     <a class="btn primary" href="http://localhost:7860" target="_blank" rel="noopener">Open localhost:7860 →</a>
   </section>

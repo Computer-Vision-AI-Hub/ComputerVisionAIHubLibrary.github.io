@@ -4,9 +4,6 @@
    The page never hardcodes models; it all comes from the manifest.
    ============================================================ */
 
-// Change this to your GHCR/Docker Hub image.
-const DOCKER_IMAGE = "docker.io/lukasiktar/computervisionaihub";
-
 // Module-level state
 let ALL_MODELS = [];
 let activeTask = "all";
@@ -103,9 +100,6 @@ function card(m) {
     </div>`;
   };
 
-  const runCmd =
-    `docker run -v $(pwd):/data ${DOCKER_IMAGE} ${m.download} /data/test.jpg`;
-
   const imageBlock = m.image
     ? `<div class="card-image">
          <img src="${esc(m.image)}" alt="Example detections from ${esc(m.name)}" loading="lazy"
@@ -154,14 +148,6 @@ function card(m) {
       <div class="run">
         <button class="copy-btn" data-cmd="${esc(m.download)}">copy</button>
         <code>${esc(m.download)}</code>
-      </div>
-    </div>
-
-    <div class="run-group">
-      <span class="run-label">Run via CLI</span>
-      <div class="run">
-        <button class="copy-btn" data-cmd="${esc(runCmd)}">copy</button>
-        <code>${esc(runCmd)}</code>
       </div>
     </div>
   </article>`;

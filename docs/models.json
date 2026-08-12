@@ -446,7 +446,7 @@
       "onnx": "https://huggingface.co/lukasiktar11/license-place-ocr-detector3/resolve/main/best.onnx",
       "size_mb": 44.1,
       "image_size": 640,
-      "image":"assets/previews/LicensePlateOCRDetection2.jpg"
+      "image":"assets/previews/LicensePlateOCRDetection3.jpg"
     },
     {
       "id": "road-line-segmentator",

@@ -1,13 +1,13 @@
 # ComputerVisionAIHub local inference image.
 #
 # Build:
-#   docker build -t computervisionaihub ./inference
+#   docker build -t computervisionaihub:1.0 ./inference
 #
 # Run the CLI (replace <MODEL_URL> and test.jpg with your own):
-#   docker run -v $(pwd):/data computervisionaihub <MODEL_URL> /data/test.jpg
+#   docker run -v $(pwd):/data computervisionaihub:1.0 <MODEL_URL> /data/test.jpg
 #
 # Run the web UI instead (drag-and-drop on http://localhost:7860):
-#   docker run -p 7860:7860 -v $(pwd)/inference:/app  --entrypoint python docker.io/lukasiktar/computervisionaihub app.py
+#   docker run -p 7860:7860 --entrypoint python computervisionaihub:1.0 app.py
 
 
 FROM python:3.11-slim
@@ -21,6 +21,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
 
 COPY detect.py .
 COPY app.py .

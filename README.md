@@ -43,15 +43,15 @@ Face URL — the container downloads it on first run.
 
 ```bash
 # build once (make sure you build from computervisionaihub directory)
-docker build -t computervisionaihub ./inference
+docker build -t computervisionaihub:1.0 ./inference
 
 # CLI: annotate one image
-docker run -v $(pwd):/data computervisionaihub \
+docker run -v $(pwd):/data computervisionaihub:1.0 \
   https://huggingface.co/youruser/yourmodel/resolve/main/best.pt \
   /data/test.jpg
 
 # web UI: drag-and-drop at http://localhost:7860
-docker run -p 7860:7860 --entrypoint python computervisionaihub app.py
+docker run -p 7860:7860 --entrypoint python computervisionaihub:1.0 app.py
 ```
 
 ## For maintainers: add a model
