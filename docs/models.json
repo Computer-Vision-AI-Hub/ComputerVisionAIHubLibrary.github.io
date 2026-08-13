@@ -36,7 +36,116 @@
       "image_size": 640,
       "image":"assets/previews/JetsonNanoFrontDetection.png"
     },
+    {
+      "id": "raspberry-pi-elements-detector",
+      "name": "Raspberry Pi elements detector",
+      "summary": "Performs the detection on main elements on Raspberry Pi.",
+      "base_model": "yolo26n",
+      "task": "detection",
+      "classes": [
+        "40_pins",
+        "A-V",
+        "Connector_HDMI",
+        "Connector_camera",
+        "Connector_display",
+        "Connector_power",
+        "Ethernet",
+        "PoE",
+        "RaspberryPi_CPU",
+        "RaspberryPi_board",
+        "RaspberryPi_model",
+        "USB",
+        "USB_interface",
+        "Wi-Fi-Bluetooth_module",
+        "berry"
+      ],
+      "dataset": "https://universe.roboflow.com/computervisionaihub-n6cdj/raspberrypi-0cwjz",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.983,
+        "mAP50_95": 0.945,
+        "precision": 0.959,
+        "recall": 0.914
+      },
+      "hf_repo": "lukasiktar11/raspberry-pi-elements-detector",
+      "download": "https://huggingface.co/lukasiktar11/raspberry-pi-elements-detector/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/raspberry-pi-elements-detector/resolve/main/best.onnx",
+      "size_mb": 5.4,
+      "image_size": 640,
+      "image": "assets/previews/RaspberryPiFrontDetection.jpg"
+    },
+    {
+      "id": "raspberry-pi-elements-detector-rt-detr",
+      "name": "Raspberry Pi elements detector RT-DETR",
+      "summary": "Performs the detection on main elements on Arduino Uno.",
+      "base_model": "rtdetr-l",
+      "task": "detection",
+      "classes": [
+        "40_pins",
+        "A-V",
+        "Connector_HDMI",
+        "Connector_camera",
+        "Connector_display",
+        "Connector_power",
+        "Ethernet",
+        "PoE",
+        "RaspberryPi_CPU",
+        "RaspberryPi_board",
+        "RaspberryPi_model",
+        "USB",
+        "USB_interface",
+        "Wi-Fi-Bluetooth_module",
+        "berry"
+      ],
+      "dataset": "https://universe.roboflow.com/computervisionaihub-n6cdj/raspberrypi-0cwjz",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.994,
+        "mAP50_95": 0.94,
+        "precision": 0.978,
+        "recall": 1.0
+      },
+      "hf_repo": "lukasiktar11/raspberry-pi-elements-detector-rt-detr",
+      "download": "https://huggingface.co/lukasiktar11/raspberry-pi-elements-detector-rt-detr/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/raspberry-pi-elements-detector-rt-detr/resolve/main/best.onnx",
+      "size_mb": 66.3,
+      "image_size": 640,
+      "image": "assets/previews/RaspberryPiFrontDetectionRTDETR.jpg"
+    },
 
+    {
+      "id": "arduino-uno-elements-detector",
+      "name": "Arduino Uno elements detector",
+      "summary": "Performs the detection on main elements on Arduino Uno.",
+      "base_model": "yolo26n",
+      "task": "detection",
+      "classes": [
+        "6_pins",
+        "ARDUINO",
+        "Arduino_CPU",
+        "Arduino_board",
+        "Capacitor",
+        "Oscilator",
+        "Power",
+        "Reset",
+        "UNO_white",
+        "USB_Arduino"
+      ],
+      "dataset": "https://universe.roboflow.com/computervisionaihub-n6cdj/arduino_uno_2",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.981,
+        "mAP50_95": 0.911,
+        "precision": 0.937,
+        "recall": 0.936
+      },
+      "hf_repo": "lukasiktar11/arduino-uno-elements-detector",
+      "download": "https://huggingface.co/lukasiktar11/arduino-uno-elements-detector/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/arduino-uno-elements-detector/resolve/main/best.onnx",
+      "size_mb": 5.4,
+      "image_size": 640,
+      "image":"assets/previews/ArduinoUnoFrontDetection.png"
+    },
 
     {
       "id": "traffic-vehicle-detection",
