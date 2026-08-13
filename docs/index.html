@@ -38,6 +38,7 @@
     <div class="launch-text">
       <h2>Run the visual UI locally</h2>
       <p>Pulls the image if it's not cached, starts the app, and serves a drag-and-drop UI on <code>localhost:7860</code>. Requires Docker.</p>
+      <a class="btn secondary launch-guide-link" href="#install-guide">Installation guide</a>
     </div>
     <div class="run launch-run">
       <button class="copy-btn" id="launch-copy" data-cmd="docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py">copy</button>
@@ -60,6 +61,11 @@
     </div>
   </section>
 
+  <!-- ============ DISCLAIMER ============ -->
+  <div class="wrap disclaimer">
+    <p><strong>Heads up:</strong> every model here is trained on a specific dataset, so how well it performs on your own images depends on how closely they match that data — don't expect it to generalize to everything out of the box. Tried a model on your own footage? <a href="https://github.com/lukasiktar/ComputerVisionAIHub/issues/new" target="_blank" rel="noopener">Send us your results and what you need</a> — it helps us improve the dataset, or train a version suited to your use case.</p>
+  </div>
+
   <!-- ============ RESULTS COUNT ============ -->
   <p id="count" class="wrap count" aria-live="polite"></p>
 
@@ -68,6 +74,60 @@
 
   <!-- ============ EMPTY / ERROR STATE ============ -->
   <div id="state" class="wrap state" hidden></div>
+
+  <!-- ============ INSTALLATION GUIDE ============ -->
+  <section id="install-guide" class="wrap install-guide" aria-label="Installation guide">
+    <h2>Installation guide</h2>
+    <p class="install-intro">Everything a fresh Ubuntu machine needs before the commands above will work. Already have Docker (and a GPU driver, if you want one)? You can skip this.</p>
+
+    <div class="guide-block">
+      <h3>1. Install Docker Engine</h3>
+      <p>Lets you pull and run the container images on this page. Official instructions (all distros): <a href="https://docs.docker.com/engine/install/ubuntu/" target="_blank" rel="noopener">docs.docker.com/engine/install/ubuntu</a></p>
+      <div class="run multiline">
+        <button class="copy-btn" data-cmd="sudo apt-get update&#10;sudo apt-get install -y ca-certificates curl&#10;sudo install -m 0755 -d /etc/apt/keyrings&#10;sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc&#10;sudo chmod a+r /etc/apt/keyrings/docker.asc&#10;echo &quot;deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release &amp;&amp; echo &quot;$VERSION_CODENAME&quot;) stable&quot; | sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null&#10;sudo apt-get update&#10;sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin&#10;sudo usermod -aG docker $USER">copy</button>
+        <code>sudo apt-get update
+sudo apt-get install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release &amp;&amp; echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker $USER</code>
+      </div>
+      <p class="install-note">The last line lets you run <code>docker</code> without <code>sudo</code> — log out and back in (or run <code>newgrp docker</code>) for it to take effect.</p>
+    </div>
+
+    <div class="guide-block">
+      <h3>2. Install the NVIDIA driver / CUDA <span class="optional">— optional, only if you have an NVIDIA GPU</span></h3>
+      <p>The Container Toolkit (next step) needs the GPU driver already installed on the host. The right package depends on your exact GPU and Ubuntu version, so the quickest safe start is Ubuntu's own driver detector:</p>
+      <div class="run">
+        <button class="copy-btn" data-cmd="sudo ubuntu-drivers autoinstall">copy</button>
+        <code>sudo ubuntu-drivers autoinstall</code>
+      </div>
+      <p class="install-note">Reboot afterwards, then check it worked with <code>nvidia-smi</code>. For a specific GPU/driver version, a manual CUDA Toolkit install, or non-Ubuntu setups, use the official resources instead:</p>
+      <ul class="install-links">
+        <li><a href="https://ubuntu.com/server/docs/nvidia-drivers-installation" target="_blank" rel="noopener">Ubuntu — NVIDIA driver installation guide</a></li>
+        <li><a href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html" target="_blank" rel="noopener">NVIDIA — CUDA Installation Guide for Linux</a></li>
+        <li><a href="https://developer.nvidia.com/cuda-downloads" target="_blank" rel="noopener">NVIDIA — CUDA Toolkit downloads (pick your OS for exact commands)</a></li>
+      </ul>
+    </div>
+
+    <div class="guide-block">
+      <h3>3. Install the NVIDIA Container Toolkit <span class="optional">— optional, for GPU acceleration</span></h3>
+      <p>Only needed if you have an NVIDIA GPU and want faster inference. Requires the driver from step 2. Official instructions: <a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-the-nvidia-container-toolkit" target="_blank" rel="noopener">NVIDIA Container Toolkit install guide</a></p>
+      <div class="run multiline">
+        <button class="copy-btn" data-cmd="curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg&#10;curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list&#10;sudo apt-get update&#10;sudo apt-get install -y nvidia-container-toolkit&#10;sudo nvidia-ctk runtime configure --runtime=docker&#10;sudo systemctl restart docker">copy</button>
+        <code>curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update
+sudo apt-get install -y nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker</code>
+      </div>
+      <p class="install-note">Once installed, add <code>--gpus all</code> to any <code>docker run</code> command on this page to use the GPU.</p>
+    </div>
+  </section>
 
   <!-- ============ FOOTER ============ -->
   <footer class="site-footer">

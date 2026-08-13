@@ -181,8 +181,9 @@ function showState(msg) {
 // ---- search input (debounced lightly via input event) ----
 els.search.addEventListener("input", (e) => { query = e.target.value; render(); });
 
-// ---- static "run locally" panel copy button (outside the grid, wired once) ----
+// ---- static copy buttons outside the grid (launch panel + install guide), wired once ----
 const launchCopyBtn = document.getElementById("launch-copy");
 if (launchCopyBtn) wireCopyButton(launchCopyBtn);
+document.querySelectorAll("#install-guide .copy-btn").forEach(wireCopyButton);
 
 load();

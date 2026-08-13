@@ -98,6 +98,7 @@ a { color: var(--box); }
 .launch-text p { margin: 0; color: var(--ink-soft); font-size: 0.85rem; }
 .launch-text code { font-family: var(--mono); font-size: 0.82rem; }
 .launch-run { flex: 2 1 380px; margin: 0; }
+.launch-guide-link { display: inline-flex; margin-top: 14px; }
 
 /* ============ TOOLBAR ============ */
 .toolbar {
@@ -130,6 +131,19 @@ a { color: var(--box); }
   font-family: var(--mono); font-size: 0.78rem;
   color: var(--ink-soft); margin: 18px auto 4px;
 }
+
+/* ============ DISCLAIMER ============ */
+.disclaimer {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--box) 6%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--box) 22%, var(--line));
+  border-left: 3px solid var(--box);
+  border-radius: 8px;
+}
+.disclaimer p { margin: 0; color: var(--ink-soft); font-size: 0.85rem; line-height: 1.6; }
+.disclaimer strong { color: var(--ink); }
+.disclaimer a { color: var(--box); font-weight: 500; }
 
 /* ============ GRID ============ */
 .grid {
@@ -280,11 +294,41 @@ a { color: var(--box); }
 .copy-btn:hover { color: #fff; border-color: rgba(255,255,255,.35); }
 .copy-btn:focus-visible { outline: 2px solid var(--mint-bright); outline-offset: 1px; }
 
+/* multi-line variant, for install scripts rather than one-line commands */
+.run.multiline { align-items: flex-start; }
+.run.multiline code { white-space: pre; padding: 8px 8px 8px 2px; line-height: 1.6; }
+.run.multiline .copy-btn { margin-top: 2px; }
+
 /* ============ STATE (empty / error) ============ */
 .state {
   text-align: center; padding: 60px 24px; color: var(--ink-soft);
   font-family: var(--mono); font-size: 0.9rem;
 }
+
+/* ============ INSTALLATION GUIDE ============ */
+.install-guide { padding-block: 44px 60px; border-top: 1px solid var(--line); }
+.install-guide h2 {
+  font-family: var(--display); font-weight: 500; font-size: 1.3rem;
+  margin: 0 0 8px; letter-spacing: -0.01em;
+}
+.install-intro { color: var(--ink-soft); font-size: 0.9rem; margin: 0 0 28px; max-width: 640px; }
+
+.guide-block { margin-bottom: 28px; }
+.guide-block:last-child { margin-bottom: 0; }
+.guide-block h3 {
+  font-family: var(--display); font-weight: 500; font-size: 1rem;
+  margin: 0 0 6px; letter-spacing: -0.01em;
+}
+.guide-block h3 .optional { color: var(--ink-soft); font-weight: 400; font-size: 0.85rem; }
+.guide-block > p { color: var(--ink-soft); font-size: 0.88rem; margin: 0 0 10px; }
+.install-note { color: var(--ink-soft); font-size: 0.8rem; margin: 8px 0 0; }
+.install-note code {
+  font-family: var(--mono); font-size: 0.78rem;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 4px;
+  padding: 1px 5px;
+}
+.install-links { margin: 8px 0 0; padding-left: 20px; color: var(--ink-soft); font-size: 0.88rem; }
+.install-links li { margin: 3px 0; }
 
 /* ============ FOOTER ============ */
 .site-footer {
