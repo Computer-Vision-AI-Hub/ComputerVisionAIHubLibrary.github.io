@@ -251,6 +251,30 @@
       "image":"assets/previews/FootballPlayerDetection2.png"
     },
     {
+      "id": "aerial-sheep-detector-yolo26",
+      "name": "Aerial Sheep Detector",
+      "summary": "Detects sheep in aerial images.",
+      "base_model": "yolo26s",
+      "task": "detection",
+      "classes": [
+        "sheep"
+      ],
+      "dataset": "https://universe.roboflow.com/riis/aerial-sheep",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.962,
+        "mAP50_95": 0.552,
+        "precision": 0.931,
+        "recall": 0.921
+      },
+      "hf_repo": "lukasiktar11/aerial-sheep-detector-yolo26",
+      "download": "https://huggingface.co/lukasiktar11/aerial-sheep-detector-yolo26/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/aerial-sheep-detector-yolo26/resolve/main/best.onnx",
+      "size_mb": 66.4,
+      "image_size": 640,
+      "image":"assets/previews/AerialSheepDetection.jpg"
+    },
+    {
       "id": "parking-spot-detector",
       "name": "Parking spot detector",
       "summary": "Detects parking spots and whether cars are on the spots.",
@@ -379,6 +403,113 @@
       "size_mb": 20.3,
       "image_size": 640,
       "image":"assets/previews/ThermalFireDetection.png"
+    },
+    {
+      "id": "license-plate-detector-rt-detr",
+      "name": "License Plate Detector - RT-DETR",
+      "summary": "Detects license plates on cars.",
+      "base_model": "rtdetr-l",
+      "task": "detection",
+      "classes": [
+        "plate"
+      ],
+      "dataset": "https://universe.roboflow.com/rims-bgqtv/license-plate-oqouj/browse?queryText=&pageSize=50&startingIndex=0&browseQuery=true",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.922,
+        "mAP50_95": 0.777,
+        "precision": 0.888,
+        "recall": 0.898
+      },
+      "hf_repo": "lukasiktar11/license-plate-detector-rt-detr",
+      "download": "https://huggingface.co/lukasiktar11/license-plate-detector-rt-detr/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/license-plate-detector-rt-detr/resolve/main/best.onnx",
+      "size_mb": 66.2,
+      "image_size": 640,
+      "image" : "assets/previews/LicensePlateDetectionRTDETR.jpg"
+    },
+    {
+      "id": "license-plate-detector-yolo26",
+      "name": "License Plate Detector",
+      "summary": "Detects license plates on cars.",
+      "base_model": "yolo26s",
+      "task": "detection",
+      "classes": [
+        "plate"
+      ],
+      "dataset": "https://universe.roboflow.com/rims-bgqtv/license-plate-oqouj/browse?queryText=&pageSize=50&startingIndex=0&browseQuery=true",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.966,
+        "mAP50_95": 0.841,
+        "precision": 0.946,
+        "recall": 0.937
+      },
+      "hf_repo": "lukasiktar11/license-plate-detector-yolo26",
+      "download": "https://huggingface.co/lukasiktar11/license-plate-detector-yolo26/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/license-plate-detector-yolo26/resolve/main/best.onnx",
+      "size_mb": 20.3,
+      "image_size": 640,
+      "image" : "assets/previews/LicensePlateDetection.jpg"
+    },
+    {
+      "id": "license-plate-ocr-detector-rt-detr",
+      "name": "License Plate OCR Detector - RT-DETR",
+      "summary": "Detects license plates in images.",
+      "base_model": "rtdetr-l",
+      "task": "detection",
+      "classes": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z"
+      ],
+      "dataset": "https://universe.roboflow.com/demarcationbased-road-lane-segmentation/road-lane-instance-segmentation",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.981,
+        "mAP50_95": 0.806,
+        "precision": 0.968,
+        "recall": 0.96
+      },
+      "hf_repo": "lukasiktar11/license-plate-ocr-detector-rt-detr",
+      "download": "https://huggingface.co/lukasiktar11/license-plate-ocr-detector-rt-detr/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/license-plate-ocr-detector-rt-detr/resolve/main/best.onnx",
+      "size_mb": 66.4,
+      "image_size": 640,
+      "image":"assets/previews/LicensePlateOCRDetectionRTDETR.jpg"
     },
     {
       "id": "license-plate-ocr-detector",
