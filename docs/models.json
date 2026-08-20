@@ -144,7 +144,7 @@
       "onnx": "https://huggingface.co/lukasiktar11/arduino-uno-elements-detector/resolve/main/best.onnx",
       "size_mb": 5.4,
       "image_size": 640,
-      "image":"assets/previews/ArduinoUnoFrontDetection.png"
+      "image":"assets/previews/ArduinoUnoFrontDetection.jpg"
     },
 
     {
@@ -496,7 +496,7 @@
         "Y",
         "Z"
       ],
-      "dataset": "https://universe.roboflow.com/demarcationbased-road-lane-segmentation/road-lane-instance-segmentation",
+      "dataset": "https://universe.roboflow.com/w251ocr/ocr-oy9a7",
       "dataset_license": "CC BY 4.0",
       "metrics": {
         "mAP50": 0.981,
@@ -733,7 +733,8 @@
       "download": "https://huggingface.co/lukasiktar11/road-line-segmentator2/resolve/main/best.pt",
       "onnx": "https://huggingface.co/lukasiktar11/road-line-segmentator2/resolve/main/best.onnx",
       "size_mb": 23.3,
-      "image_size": 640
+      "image_size": 640,
+      "image":"assets/previews/RoadLineSegmentation1.png"
     },
     {
       "id": "road-line-segmentator3",

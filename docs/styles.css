@@ -337,10 +337,150 @@ a { color: var(--box); }
 }
 .site-footer p { margin: 0; color: var(--ink-soft); font-size: 0.82rem; }
 
-/* ============ MOTION (staggered card reveal) ============ */
+/* ============ TRY IN BROWSER (button + modal) ============ */
+.btn.try-btn {
+  background: var(--surface); color: var(--box-2);
+  border-color: color-mix(in srgb, var(--box-2) 40%, var(--line));
+}
+.btn.try-btn:hover { border-color: var(--box-2); background: color-mix(in srgb, var(--box-2) 8%, var(--surface)); }
+
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+  backdrop-filter: blur(2px);
+}
+.modal-overlay[hidden] { display: none; }
+
+.modal {
+  width: 100%; max-width: 640px; max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: var(--surface); color: var(--ink);
+  border: 2px solid var(--ink); border-radius: var(--radius);
+  padding: 20px 22px 24px;
+  box-shadow: 0 24px 60px -20px rgba(4,44,83,.45);
+}
+
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.modal-title {
+  font-family: var(--display); font-weight: 500; font-size: 1.1rem;
+  margin: 0; letter-spacing: -0.01em;
+}
+.modal-close {
+  flex: none; width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; line-height: 1; cursor: pointer;
+  background: var(--paper); color: var(--ink-soft);
+  border: 1px solid var(--line); border-radius: 8px;
+  transition: all .15s;
+}
+.modal-close:hover { color: var(--ink); border-color: var(--ink); }
+.modal-close:focus-visible { outline: 2px solid var(--box); outline-offset: 1px; }
+
+.modal-note { color: var(--ink-soft); font-size: 0.82rem; margin: 10px 0 16px; }
+
+/* label only appears once an image has been set, right above the box */
+.try-upload-label {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
+  color: var(--ink-soft); text-transform: uppercase; letter-spacing: .03em;
+  margin: 0 0 6px;
+}
+
+/* the upload box: a big empty-state placeholder before an image is set,
+   the same box then shows the annotated result canvas in its place —
+   mirrors the local Docker UI's image input (drop / click / paste-from-clipboard) */
+.try-drop {
+  position: relative;
+  border: 1.5px dashed var(--line); border-radius: 12px;
+  background: var(--paper);
+  overflow: hidden;
+  transition: border-color .15s, background-color .15s;
+}
+.try-drop.dragover { border-color: var(--box); background: color-mix(in srgb, var(--box) 6%, var(--paper)); }
+.try-drop.has-image { border-style: solid; }
+
+.try-drop-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; min-height: 260px; padding: 24px;
+  color: var(--ink-soft); font-size: 0.88rem; text-align: center;
+  cursor: pointer; transition: color .15s;
+}
+.try-drop-empty svg { color: var(--box); opacity: .85; }
+.try-drop-empty:hover { color: var(--ink); }
+
+.try-drop .try-canvas {
+  display: block; width: 100%; height: auto; max-height: 60vh;
+  background: var(--paper);
+}
+
+.try-drop-actions {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; gap: 6px;
+}
+
+/* setting display: flex/block above wins the cascade over the UA [hidden] rule
+   at equal specificity, so these three need an explicit [hidden] override or
+   the empty placeholder, canvas, and action icons all stay visible at once */
+.try-drop-empty[hidden],
+.try-drop .try-canvas[hidden],
+.try-drop-actions[hidden] {
+  display: none;
+}
+.try-icon-btn {
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; border: 1px solid rgba(255,255,255,.25);
+  background: rgba(4,44,83,.65); color: #fff; cursor: pointer;
+  backdrop-filter: blur(3px);
+  transition: background-color .15s, transform .15s;
+}
+.try-icon-btn:hover { background: rgba(4,44,83,.88); transform: translateY(-1px); }
+.try-icon-btn:focus-visible { outline: 2px solid var(--mint-bright); outline-offset: 1px; }
+
+.try-controls { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+.try-conf-label {
+  font-family: var(--mono); font-size: 0.75rem; color: var(--ink-soft);
+  display: flex; justify-content: space-between;
+}
+.try-conf-label span { color: var(--ink); font-weight: 500; }
+#try-conf { width: 100%; accent-color: var(--box); }
+
+.try-status {
+  font-family: var(--mono); font-size: 0.78rem; color: var(--ink-soft);
+  min-height: 1.4em; margin-top: 10px;
+}
+.try-status.error { color: #B3402B; }
+
+.try-detections { margin-top: 12px; }
+.try-detections-list {
+  list-style: none; margin: 6px 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 280px; overflow-y: auto;
+}
+.try-detections-list li {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 0.78rem;
+  padding: 6px 8px; border-radius: 6px; background: var(--paper);
+}
+.try-det-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.try-det-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.try-det-score { color: var(--ink-soft); flex: none; }
+.try-det-empty { color: var(--ink-soft); background: none; padding-left: 0; }
+
+body.modal-open { overflow: hidden; }
+
+@media (max-width: 560px) {
+  .modal { padding: 16px 16px 20px; }
+  .try-drop-empty { min-height: 200px; }
+}
+
+/* ============ MOTION (staggered card reveal + modal entrance) ============ */
 @media (prefers-reduced-motion: no-preference) {
   .model-card { animation: rise .4s ease both; }
   @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+  .modal { animation: modal-in .18s ease both; }
+  @keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
 }
 
 @media (max-width: 560px) {

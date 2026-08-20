@@ -15,7 +15,33 @@ const els = {
   state:   document.getElementById("state"),
   search:  document.getElementById("search"),
   filters: document.getElementById("task-filters"),
+
+  // Try-in-browser modal (shared across all cards, filled per model on open)
+  tryModal:       document.getElementById("try-modal"),
+  tryModalTitle:  document.getElementById("try-modal-title"),
+  tryModalClose:  document.getElementById("try-modal-close"),
+  tryUploadLabel: document.getElementById("try-upload-label"),
+  tryDrop:        document.getElementById("try-drop"),
+  tryDropEmpty:   document.getElementById("try-drop-empty"),
+  tryDropActions: document.getElementById("try-drop-actions"),
+  tryUploadBtn:   document.getElementById("try-upload-btn"),
+  tryPasteBtn:    document.getElementById("try-paste-btn"),
+  tryFile:        document.getElementById("try-file"),
+  tryConf:        document.getElementById("try-conf"),
+  tryConfVal:     document.getElementById("try-conf-val"),
+  tryStatus:      document.getElementById("try-status"),
+  tryCanvas:      document.getElementById("try-canvas"),
+  tryDetList:     document.getElementById("try-detections-list"),
 };
+
+// ---- Try-in-browser state ----
+// Sessions are keyed by onnx URL and loaded lazily on first run, never on page load.
+const sessionCache = new Map();
+const tryState = { model: null, imgEl: null, scale: 1 };
+const BOX_COLORS = ["#185FA5", "#0C8567", "#378ADD", "#5DCAA5", "#C4432B", "#B98A1E"];
+const colorForClass = (cls) => BOX_COLORS[cls % BOX_COLORS.length];
+// yolo-web.js decodes plain detection, obb (rotated boxes), and segmentation (masks).
+const SUPPORTED_TRY_TASKS = new Set(["detection", "obb", "segmentation"]);
 
 // ---- small helper: escape text before inserting into HTML ----
 const esc = (s) =>
@@ -79,11 +105,13 @@ function render() {
   els.state.hidden = true;
   els.grid.innerHTML = list.map(card).join("");
   wireCopyButtons();
+  wireTryButtons();
 }
 
 // ---- 4. ONE CARD (template per model) ----
 function card(m) {
   const classes = m.classes || [];
+  const canTryInBrowser = Boolean(m.onnx) && SUPPORTED_TRY_TASKS.has(m.task || "detection");
   const shown = classes.slice(0, 6);
   const extra = classes.length - shown.length;
 
@@ -141,6 +169,7 @@ function card(m) {
       <a class="btn primary" href="${esc(m.download)}" download>Download .pt</a>
       ${m.onnx ? `<a class="btn secondary" href="${esc(m.onnx)}" download>.onnx</a>` : ""}
       ${m.dataset ? `<a class="btn secondary" href="${esc(m.dataset)}" target="_blank" rel="noopener">Dataset</a>` : ""}
+      ${canTryInBrowser ? `<button type="button" class="btn try-btn" data-model-id="${esc(m.id)}">Try in browser ▶</button>` : ""}
     </div>
 
     <div class="run-group">
@@ -178,6 +207,206 @@ function showState(msg) {
   els.count.textContent = "";
 }
 
+// ---- 6. TRY IN BROWSER (client-side inference via yolo-web.js) ----
+function wireTryButtons() {
+  els.grid.querySelectorAll(".try-btn").forEach((btn) => {
+    btn.addEventListener("click", () => openTryModal(btn.dataset.modelId));
+  });
+}
+
+function openTryModal(id) {
+  const m = ALL_MODELS.find((x) => x.id === id);
+  if (!m || !els.tryModal) return;
+
+  tryState.model = m;
+  tryState.imgEl = null;
+  tryState.scale = 1;
+
+  els.tryModalTitle.textContent = `Try in browser — ${m.name}`;
+  els.tryFile.value = "";
+  els.tryConf.value = "0.25";
+  els.tryConfVal.textContent = "0.25";
+  els.tryDetList.innerHTML = "";
+  setTryStatus("");
+  clearTryCanvas();
+  setUploadState(false);
+
+  els.tryModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closeTryModal() {
+  els.tryModal.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
+function setTryStatus(msg, isError) {
+  els.tryStatus.textContent = msg;
+  els.tryStatus.classList.toggle("error", !!isError);
+}
+
+function clearTryCanvas() {
+  els.tryCanvas.width = 0;
+  els.tryCanvas.height = 0;
+}
+
+// Before an image is set: big placeholder, click-anywhere-to-choose.
+// After: the canvas (image + detections) fills the same box in its place,
+// with an "Upload a new image" label above and upload/paste icon buttons
+// overlaid on the box — mirrors the local Docker UI's image input.
+function setUploadState(hasImage) {
+  els.tryDrop.classList.toggle("has-image", hasImage);
+  els.tryDropEmpty.hidden = hasImage;
+  els.tryCanvas.hidden = !hasImage;
+  els.tryDropActions.hidden = !hasImage;
+  els.tryUploadLabel.hidden = !hasImage;
+}
+
+function loadImageFile(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    setTryStatus("Please choose an image file.", true);
+    return;
+  }
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    tryState.imgEl = img;
+    setUploadState(true);
+    drawBaseImage();
+    runTry();
+  };
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    setTryStatus("Could not read that image file.", true);
+  };
+  img.src = url;
+}
+
+function drawBaseImage() {
+  const img = tryState.imgEl;
+  if (!img) return;
+  const maxW = 640;
+  const scale = Math.min(1, maxW / img.naturalWidth);
+  tryState.scale = scale;
+
+  els.tryCanvas.width = Math.round(img.naturalWidth * scale);
+  els.tryCanvas.height = Math.round(img.naturalHeight * scale);
+  const ctx = els.tryCanvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, els.tryCanvas.width, els.tryCanvas.height);
+}
+
+// Sessions are cached per onnx URL so switching models or re-running never re-downloads.
+function getSession(onnxUrl) {
+  if (!sessionCache.has(onnxUrl)) {
+    sessionCache.set(
+      onnxUrl,
+      YOLOWeb.loadModel(onnxUrl).catch((err) => {
+        sessionCache.delete(onnxUrl); // allow retry on the next run
+        throw err;
+      })
+    );
+  }
+  return sessionCache.get(onnxUrl);
+}
+
+async function runTry() {
+  const m = tryState.model;
+  const img = tryState.imgEl;
+  if (!m || !img) return;
+
+  try {
+    setTryStatus(sessionCache.has(m.onnx) ? "Running detection…" : "Loading model…");
+    const session = await getSession(m.onnx);
+
+    setTryStatus("Running detection…");
+    const confThreshold = parseFloat(els.tryConf.value);
+    const detections = await YOLOWeb.detect(session, img, {
+      classes: m.classes || [],
+      imgSize: m.image_size || 640,
+      confThreshold,
+      colors: BOX_COLORS,
+    });
+
+    drawBaseImage();
+    drawDetections(detections);
+    fillDetectionsList(detections);
+    setTryStatus(
+      `${detections.length} detection${detections.length === 1 ? "" : "s"} at ${Math.round(confThreshold * 100)}% confidence.`
+    );
+  } catch (err) {
+    setTryStatus(`Error: ${err && err.message ? err.message : err}`, true);
+  }
+}
+
+function drawDetections(detections) {
+  const ctx = els.tryCanvas.getContext("2d");
+  const scale = tryState.scale || 1;
+
+  // segmentation masks go down first, so outlines/tags sit on top of them
+  detections.forEach((d) => {
+    if (d.mask) {
+      ctx.drawImage(d.mask, 0, 0, d.mask.width, d.mask.height, 0, 0, els.tryCanvas.width, els.tryCanvas.height);
+    }
+  });
+
+  ctx.lineWidth = 2;
+  ctx.font = "600 12px 'JetBrains Mono', monospace";
+  ctx.textBaseline = "top";
+
+  detections.forEach((d) => {
+    const color = colorForClass(d.cls);
+    let tagX, tagY;
+
+    if (d.corners) {
+      // obb: rotated polygon instead of an axis-aligned rect
+      const pts = d.corners.map(([x, y]) => [x * scale, y * scale]);
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.closePath();
+      ctx.stroke();
+      const top = pts.reduce((a, b) => (b[1] < a[1] ? b : a));
+      tagX = top[0];
+      tagY = Math.max(0, top[1] - 16);
+    } else {
+      const x1 = d.x1 * scale, y1 = d.y1 * scale, x2 = d.x2 * scale, y2 = d.y2 * scale;
+      if (!d.mask) {
+        // plain detection: the mask fill already reads as the shape for segmentation,
+        // so only draw the box outline when there isn't one
+        ctx.strokeStyle = color;
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+      }
+      tagX = x1;
+      tagY = Math.max(0, y1 - 16);
+    }
+
+    const tag = `${d.label} ${Math.round(d.score * 100)}%`;
+    const tagW = ctx.measureText(tag).width + 8;
+    ctx.fillStyle = color;
+    ctx.fillRect(tagX, tagY, tagW, 16);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(tag, tagX + 4, tagY + 2);
+  });
+}
+
+function fillDetectionsList(detections) {
+  if (!detections.length) {
+    els.tryDetList.innerHTML = `<li class="try-det-empty">No detections above this confidence.</li>`;
+    return;
+  }
+  els.tryDetList.innerHTML = detections
+    .map(
+      (d) => `<li>
+        <span class="try-det-swatch" style="background:${colorForClass(d.cls)}"></span>
+        <span class="try-det-label">${esc(d.label)}</span>
+        <span class="try-det-score">${(d.score * 100).toFixed(1)}%</span>
+      </li>`
+    )
+    .join("");
+}
+
 // ---- search input (debounced lightly via input event) ----
 els.search.addEventListener("input", (e) => { query = e.target.value; render(); });
 
@@ -185,5 +414,85 @@ els.search.addEventListener("input", (e) => { query = e.target.value; render(); 
 const launchCopyBtn = document.getElementById("launch-copy");
 if (launchCopyBtn) wireCopyButton(launchCopyBtn);
 document.querySelectorAll("#install-guide .copy-btn").forEach(wireCopyButton);
+
+// ---- try-in-browser modal chrome, wired once (the modal itself is shared/reused per model) ----
+if (els.tryModal) {
+  els.tryModalClose.addEventListener("click", closeTryModal);
+  els.tryModal.addEventListener("click", (e) => {
+    if (e.target === els.tryModal) closeTryModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !els.tryModal.hidden) closeTryModal();
+  });
+
+  document.addEventListener("paste", (e) => {
+    if (els.tryModal.hidden) return;
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.kind === "file" && item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          loadImageFile(file);
+        }
+        break;
+      }
+    }
+  });
+
+  els.tryFile.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) loadImageFile(file);
+  });
+
+  // empty-state placeholder: click anywhere to choose a file
+  els.tryDropEmpty.addEventListener("click", () => els.tryFile.click());
+
+  // once an image is loaded, the same actions move into these two icon buttons
+  els.tryUploadBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    els.tryFile.click();
+  });
+  els.tryPasteBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    if (!navigator.clipboard || !navigator.clipboard.read) {
+      setTryStatus("Clipboard access isn't supported in this browser — try Ctrl/Cmd+V instead.", true);
+      return;
+    }
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const type = item.types.find((t) => t.startsWith("image/"));
+        if (type) {
+          loadImageFile(new File([await item.getType(type)], "clipboard-image", { type }));
+          return;
+        }
+      }
+      setTryStatus("No image found on the clipboard.", true);
+    } catch (err) {
+      setTryStatus("Couldn't read the clipboard — try Ctrl/Cmd+V instead.", true);
+    }
+  });
+
+  els.tryDrop.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    els.tryDrop.classList.add("dragover");
+  });
+  els.tryDrop.addEventListener("dragleave", () => els.tryDrop.classList.remove("dragover"));
+  els.tryDrop.addEventListener("drop", (e) => {
+    e.preventDefault();
+    els.tryDrop.classList.remove("dragover");
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) loadImageFile(file);
+  });
+
+  els.tryConf.addEventListener("input", () => {
+    els.tryConfVal.textContent = parseFloat(els.tryConf.value).toFixed(2);
+  });
+  els.tryConf.addEventListener("change", () => {
+    if (tryState.imgEl) runTry();
+  });
+}
 
 load();
