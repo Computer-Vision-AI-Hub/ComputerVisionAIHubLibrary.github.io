@@ -4,6 +4,12 @@
 runs/
 datasets/
 
+#other
+.github
+.claude
+.impeccable
+PRODUCT.md
+
 # secrets
 .env
 *.key

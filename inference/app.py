@@ -36,14 +36,22 @@ def get_model(model_ref: str):
         digest = hashlib.sha256(model_ref.encode()).hexdigest()[:16]
         path = os.path.join("/tmp", f"{digest}{ext}")
         if not os.path.exists(path):
-            urllib.request.urlretrieve(model_ref, path)
+            try:
+                urllib.request.urlretrieve(model_ref, path)
+            except Exception as exc:
+                raise gr.Error(f"Couldn't download that model URL: {exc}")
 
-    model = YOLO(path)
+    try:
+        model = YOLO(path)
+    except Exception as exc:
+        raise gr.Error(f"Couldn't load that model: {exc}")
     _cache[model_ref] = model
     return model
 
 
 def run(model_ref, image, conf, show_labels):
+    if image is None:
+        raise gr.Error("Upload an image first.")
     model = get_model(model_ref)
 
     bgr = np.ascontiguousarray(image[..., ::-1])   # Gradio RGB -> Ultralytics BGR

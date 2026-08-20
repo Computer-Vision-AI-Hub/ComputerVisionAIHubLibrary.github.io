@@ -38,7 +38,7 @@ const els = {
 // ---- Try-in-browser state ----
 // Sessions are keyed by onnx URL and loaded lazily on first run, never on page load.
 const sessionCache = new Map();
-const tryState = { model: null, imgEl: null, scale: 1, lastDetections: [] };
+const tryState = { model: null, imgEl: null, scale: 1, lastDetections: [], triggerEl: null };
 const BOX_COLORS = ["#185FA5", "#0C8567", "#378ADD", "#5DCAA5", "#C4432B", "#B98A1E"];
 const colorForClass = (cls) => BOX_COLORS[cls % BOX_COLORS.length];
 // yolo-web.js decodes plain detection, obb (rotated boxes), and segmentation (masks).
@@ -214,11 +214,11 @@ function showState(msg) {
 // ---- 6. TRY IN BROWSER (client-side inference via yolo-web.js) ----
 function wireTryButtons() {
   els.grid.querySelectorAll(".try-btn").forEach((btn) => {
-    btn.addEventListener("click", () => openTryModal(btn.dataset.modelId));
+    btn.addEventListener("click", () => openTryModal(btn.dataset.modelId, btn));
   });
 }
 
-function openTryModal(id) {
+function openTryModal(id, triggerEl) {
   const m = ALL_MODELS.find((x) => x.id === id);
   if (!m || !els.tryModal) return;
 
@@ -226,6 +226,7 @@ function openTryModal(id) {
   tryState.imgEl = null;
   tryState.scale = 1;
   tryState.lastDetections = [];
+  tryState.triggerEl = triggerEl || document.activeElement;
 
   els.tryModalTitle.textContent = `Try in browser — ${m.name}`;
   els.tryFile.value = "";
@@ -239,11 +240,21 @@ function openTryModal(id) {
 
   els.tryModal.hidden = false;
   document.body.classList.add("modal-open");
+  els.tryModalClose.focus();
 }
 
 function closeTryModal() {
   els.tryModal.hidden = true;
   document.body.classList.remove("modal-open");
+  if (tryState.triggerEl && document.body.contains(tryState.triggerEl)) {
+    tryState.triggerEl.focus();
+  }
+}
+
+// Focusable, currently-visible controls inside the modal, in DOM order.
+function getModalFocusable() {
+  const selector = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  return Array.from(els.tryModal.querySelectorAll(selector)).filter((el) => el.offsetParent !== null);
 }
 
 function setTryStatus(msg, isError) {
@@ -439,7 +450,25 @@ if (els.tryModal) {
     if (e.target === els.tryModal) closeTryModal();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !els.tryModal.hidden) closeTryModal();
+    if (els.tryModal.hidden) return;
+    if (e.key === "Escape") {
+      closeTryModal();
+      return;
+    }
+    // trap Tab inside the modal so background cards aren't reachable while it's open
+    if (e.key === "Tab") {
+      const focusable = getModalFocusable();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
   });
 
   document.addEventListener("paste", (e) => {
@@ -465,6 +494,12 @@ if (els.tryModal) {
 
   // empty-state placeholder: click anywhere to choose a file
   els.tryDropEmpty.addEventListener("click", () => els.tryFile.click());
+  els.tryDropEmpty.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      els.tryFile.click();
+    }
+  });
 
   // once an image is loaded, the same actions move into these two icon buttons
   els.tryUploadBtn.addEventListener("click", (e) => {
