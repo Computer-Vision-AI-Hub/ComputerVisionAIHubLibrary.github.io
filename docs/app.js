@@ -29,6 +29,7 @@ const els = {
   tryFile:        document.getElementById("try-file"),
   tryConf:        document.getElementById("try-conf"),
   tryConfVal:     document.getElementById("try-conf-val"),
+  tryShowLabels:  document.getElementById("try-show-labels"),
   tryStatus:      document.getElementById("try-status"),
   tryCanvas:      document.getElementById("try-canvas"),
   tryDetList:     document.getElementById("try-detections-list"),
@@ -37,7 +38,7 @@ const els = {
 // ---- Try-in-browser state ----
 // Sessions are keyed by onnx URL and loaded lazily on first run, never on page load.
 const sessionCache = new Map();
-const tryState = { model: null, imgEl: null, scale: 1 };
+const tryState = { model: null, imgEl: null, scale: 1, lastDetections: [] };
 const BOX_COLORS = ["#185FA5", "#0C8567", "#378ADD", "#5DCAA5", "#C4432B", "#B98A1E"];
 const colorForClass = (cls) => BOX_COLORS[cls % BOX_COLORS.length];
 // yolo-web.js decodes plain detection, obb (rotated boxes), and segmentation (masks).
@@ -169,8 +170,11 @@ function card(m) {
       <a class="btn primary" href="${esc(m.download)}" download>Download .pt</a>
       ${m.onnx ? `<a class="btn secondary" href="${esc(m.onnx)}" download>.onnx</a>` : ""}
       ${m.dataset ? `<a class="btn secondary" href="${esc(m.dataset)}" target="_blank" rel="noopener">Dataset</a>` : ""}
-      ${canTryInBrowser ? `<button type="button" class="btn try-btn" data-model-id="${esc(m.id)}">Try in browser ▶</button>` : ""}
     </div>
+
+    ${canTryInBrowser ? `<div class="actions">
+      <button type="button" class="btn try-btn" data-model-id="${esc(m.id)}">Try in browser ▶</button>
+    </div>` : ""}
 
     <div class="run-group">
       <span class="run-label">Model URL — paste into localhost:7860</span>
@@ -221,11 +225,13 @@ function openTryModal(id) {
   tryState.model = m;
   tryState.imgEl = null;
   tryState.scale = 1;
+  tryState.lastDetections = [];
 
   els.tryModalTitle.textContent = `Try in browser — ${m.name}`;
   els.tryFile.value = "";
   els.tryConf.value = "0.25";
   els.tryConfVal.textContent = "0.25";
+  els.tryShowLabels.checked = true;
   els.tryDetList.innerHTML = "";
   setTryStatus("");
   clearTryCanvas();
@@ -250,15 +256,15 @@ function clearTryCanvas() {
   els.tryCanvas.height = 0;
 }
 
-// Before an image is set: big placeholder, click-anywhere-to-choose.
-// After: the canvas (image + detections) fills the same box in its place,
-// with an "Upload a new image" label above and upload/paste icon buttons
-// overlaid on the box — mirrors the local Docker UI's image input.
+// Before an image is set: big placeholder, click-anywhere-to-choose, with the
+// upload/paste icons already available. After: the canvas (image + detections)
+// fills the same box in its place, with an "Upload a new image" label above —
+// mirrors the local Docker UI's image input.
 function setUploadState(hasImage) {
   els.tryDrop.classList.toggle("has-image", hasImage);
   els.tryDropEmpty.hidden = hasImage;
   els.tryCanvas.hidden = !hasImage;
-  els.tryDropActions.hidden = !hasImage;
+  els.tryDropActions.hidden = false;
   els.tryUploadLabel.hidden = !hasImage;
 }
 
@@ -328,6 +334,7 @@ async function runTry() {
       colors: BOX_COLORS,
     });
 
+    tryState.lastDetections = detections;
     drawBaseImage();
     drawDetections(detections);
     fillDetectionsList(detections);
@@ -339,9 +346,17 @@ async function runTry() {
   }
 }
 
+// Toggling "show labels" only needs to re-paint the last result, not re-run inference.
+function redrawDetections() {
+  if (!tryState.imgEl) return;
+  drawBaseImage();
+  drawDetections(tryState.lastDetections);
+}
+
 function drawDetections(detections) {
   const ctx = els.tryCanvas.getContext("2d");
   const scale = tryState.scale || 1;
+  const showLabels = els.tryShowLabels.checked;
 
   // segmentation masks go down first, so outlines/tags sit on top of them
   detections.forEach((d) => {
@@ -381,6 +396,8 @@ function drawDetections(detections) {
       tagX = x1;
       tagY = Math.max(0, y1 - 16);
     }
+
+    if (!showLabels) return;
 
     const tag = `${d.label} ${Math.round(d.score * 100)}%`;
     const tagW = ctx.measureText(tag).width + 8;
@@ -493,6 +510,8 @@ if (els.tryModal) {
   els.tryConf.addEventListener("change", () => {
     if (tryState.imgEl) runTry();
   });
+
+  els.tryShowLabels.addEventListener("change", redrawDetections);
 }
 
 load();

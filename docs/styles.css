@@ -147,8 +147,10 @@ a { color: var(--box); }
 
 /* ============ GRID ============ */
 .grid {
-  display: grid; gap: 20px; padding-block: 12px 60px;
+  display: grid; column-gap: 20px; row-gap: 40px; padding-block: 40px 60px;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  /* extra top/row spacing gives the card-tab room to float above each card
+     (see .card-tab) without colliding with the row above or the toolbar */
 }
 
 /* ---- THE SIGNATURE: a model card framed like a detection box ---- */
@@ -169,12 +171,16 @@ a { color: var(--box); }
   box-shadow: 0 16px 32px -16px rgba(24,95,165,.35);
 }
 
-/* The corner label tab — mimics YOLO stamping "class conf" on a box edge. */
+/* The corner label tab — mimics YOLO stamping "class conf" right above a
+   box's top-left corner: flush against the border with no gap (like a real
+   detection label), sharp only where it meets the box so it reads as
+   attached rather than a separate floating chip. */
 .card-tab {
   position: absolute; top: -2px; left: -2px;
+  transform: translateY(-100%);
   font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
   color: #fff; background: var(--ink);
-  padding: 4px 10px; border-radius: 8px 0 8px 0;
+  padding: 4px 10px; border-radius: 6px 6px 6px 0;
   transition: background .18s;
 }
 .model-card:hover .card-tab { background: var(--box); }
@@ -339,10 +345,14 @@ a { color: var(--box); }
 
 /* ============ TRY IN BROWSER (button + modal) ============ */
 .btn.try-btn {
-  background: var(--surface); color: var(--box-2);
-  border-color: color-mix(in srgb, var(--box-2) 40%, var(--line));
+  background: linear-gradient(135deg, var(--box-2), color-mix(in srgb, var(--box-2) 70%, var(--mint-bright)));
+  color: #fff;
+  box-shadow: 0 2px 10px -3px color-mix(in srgb, var(--box-2) 65%, transparent);
 }
-.btn.try-btn:hover { border-color: var(--box-2); background: color-mix(in srgb, var(--box-2) 8%, var(--surface)); }
+.btn.try-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--box-2) 70%, transparent);
+}
 
 .modal-overlay {
   position: fixed; inset: 0; z-index: 100;
@@ -444,6 +454,13 @@ a { color: var(--box); }
 }
 .try-conf-label span { color: var(--ink); font-weight: 500; }
 #try-conf { width: 100%; accent-color: var(--box); }
+
+.try-toggle {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 0.78rem; color: var(--ink-soft);
+  margin-top: 10px; cursor: pointer; user-select: none;
+}
+.try-toggle input { accent-color: var(--box); cursor: pointer; }
 
 .try-status {
   font-family: var(--mono); font-size: 0.78rem; color: var(--ink-soft);

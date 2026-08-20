@@ -27,25 +27,11 @@
           <p class="brand-tag">Custom-trained YOLO models, free to download and run.</p>
         </div>
       </div>
-      <a class="ghost-btn" href="https://github.com/youruser/yolo-model-hub" target="_blank" rel="noopener">
-        Contribute a model →
+      <a class="ghost-btn" href="#launch-panel">
+        Local installation →
       </a>
     </div>
   </header>
-
-  <!-- ============ LAUNCH PANEL (run the visual UI locally) ============ -->
-  <section class="wrap launch-panel" aria-label="Run locally">
-    <div class="launch-text">
-      <h2>Run the visual UI locally</h2>
-      <p>Pulls the image if it's not cached, starts the app, and serves a drag-and-drop UI on <code>localhost:7860</code>. Requires Docker.</p>
-      <a class="btn secondary launch-guide-link" href="#install-guide">Installation guide</a>
-    </div>
-    <div class="run launch-run">
-      <button class="copy-btn" id="launch-copy" data-cmd="docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py">copy</button>
-      <code id="launch-cmd">docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py</code>
-    </div>
-    <a class="btn primary" href="http://localhost:7860" target="_blank" rel="noopener">Open localhost:7860 →</a>
-  </section>
 
   <!-- ============ TOOLBAR (search + task filter) ============ -->
   <section class="wrap toolbar" aria-label="Filter models">
@@ -74,6 +60,20 @@
 
   <!-- ============ EMPTY / ERROR STATE ============ -->
   <div id="state" class="wrap state" hidden></div>
+
+  <!-- ============ LAUNCH PANEL (run the visual UI locally) ============ -->
+  <section id="launch-panel" class="wrap launch-panel" aria-label="Run locally">
+    <div class="launch-text">
+      <h2>Run the visual UI locally</h2>
+      <p>Pulls the image if it's not cached, starts the app, and serves a drag-and-drop UI on <code>localhost:7860</code>. Requires Docker.</p>
+      <a class="btn secondary launch-guide-link" href="#install-guide">Installation guide</a>
+    </div>
+    <div class="run launch-run">
+      <button class="copy-btn" id="launch-copy" data-cmd="docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py">copy</button>
+      <code id="launch-cmd">docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py</code>
+    </div>
+    <a class="btn primary" href="http://localhost:7860" target="_blank" rel="noopener">Open localhost:7860 →</a>
+  </section>
 
   <!-- ============ INSTALLATION GUIDE ============ -->
   <section id="install-guide" class="wrap install-guide" aria-label="Installation guide">
@@ -183,6 +183,11 @@ sudo systemctl restart docker</code>
         </label>
         <input id="try-conf" type="range" min="0.05" max="0.95" step="0.01" value="0.25" />
       </div>
+
+      <label class="try-toggle">
+        <input type="checkbox" id="try-show-labels" checked />
+        Show labels &amp; confidence
+      </label>
 
       <div id="try-status" class="try-status" aria-live="polite"></div>
 

@@ -43,12 +43,13 @@ def get_model(model_ref: str):
     return model
 
 
-def run(model_ref, image, conf):
+def run(model_ref, image, conf, show_labels):
     model = get_model(model_ref)
 
     bgr = np.ascontiguousarray(image[..., ::-1])   # Gradio RGB -> Ultralytics BGR
     results = model(bgr, conf=conf)
-    annotated = results[0].plot()[..., ::-1]        # plot() BGR -> Gradio RGB
+    # labels/conf off draws just the boxes, easier to see when they overlap
+    annotated = results[0].plot(labels=show_labels, conf=show_labels)[..., ::-1]
 
     names = model.names
 
@@ -74,12 +75,13 @@ with gr.Blocks(title="ComputerVisionAIHub runner") as demo:
             )
             image = gr.Image(label="Image", type="numpy")
             conf = gr.Slider(0.05, 0.95, value=0.25, step=0.05, label="Confidence threshold")
+            show_labels = gr.Checkbox(value=True, label="Show labels & confidence")
             btn = gr.Button("Run detection", variant="primary")
         with gr.Column():
             out_img = gr.Image(label="Result")
             out_tbl = gr.Dataframe(headers=["class", "confidence"], label="Detections")
 
-    btn.click(run, inputs=[model_ref, image, conf], outputs=[out_img, out_tbl])
+    btn.click(run, inputs=[model_ref, image, conf, show_labels], outputs=[out_img, out_tbl])
 
 if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=7860)
