@@ -184,10 +184,16 @@ sudo systemctl restart docker</code>
         <input id="try-conf" type="range" min="0.05" max="0.95" step="0.01" value="0.25" />
       </div>
 
-      <label class="try-toggle">
-        <input type="checkbox" id="try-show-labels" checked />
-        Show labels &amp; confidence
-      </label>
+      <div class="try-toggles">
+        <label class="try-toggle">
+          <input type="checkbox" id="try-show-boxes" checked />
+          Show boxes
+        </label>
+        <label class="try-toggle">
+          <input type="checkbox" id="try-show-labels" checked />
+          Show labels &amp; confidence
+        </label>
+      </div>
 
       <div id="try-status" class="try-status" aria-live="polite"></div>
 

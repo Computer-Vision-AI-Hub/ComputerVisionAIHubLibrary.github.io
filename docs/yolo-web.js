@@ -101,7 +101,8 @@
   // determined by output shape in detect(), not by the model's declared task,
   // so a contributor's raw (non-end2end) export still works via decodeRawHead.
 
-  // [1, numDets, 6] = x1,y1,x2,y2,score,cls
+  // [1, numDets, 6] = x1,y1,x2,y2,score,cls (Ultralytics YOLO end-to-end export;
+  // corners already in input-pixel/imgSize letterboxed space)
   function decodeDetection(data, dims, classes, r, dw, dh, confThreshold) {
     const numDets = dims[1];
     const boxes = [];
@@ -112,6 +113,43 @@
       const cls = Math.round(data[base + 5]);
       const [x1, y1] = unletterboxPoint(data[base], data[base + 1], r, dw, dh);
       const [x2, y2] = unletterboxPoint(data[base + 2], data[base + 3], r, dw, dh);
+      boxes.push({ x1, y1, x2, y2, score, cls, label: (classes && classes[cls]) || `class ${cls}` });
+    }
+    return boxes;
+  }
+
+  // [1, numDets, 6] = cx,cy,w,h,score,cls, all normalized to [0,1] (RT-DETR's
+  // native end-to-end export — same shape as decodeDetection above but a
+  // completely different encoding: center+size instead of corners, and
+  // fractions of the image instead of letterboxed pixels). Distinguished at
+  // call time by looksNormalizedCenter() since both share dims[-1] === 6.
+  function looksNormalizedCenter(data, dims) {
+    const numDets = dims[1];
+    let maxVal = 0;
+    for (let i = 0; i < numDets; i++) {
+      const base = i * 6;
+      for (let k = 0; k < 4; k++) {
+        const v = Math.abs(data[base + k]);
+        if (v > maxVal) maxVal = v;
+      }
+    }
+    // pixel-space corners for a 640-letterboxed input routinely exceed 1;
+    // normalized center/size values never do (with generous headroom for rounding)
+    return maxVal <= 1.5;
+  }
+
+  function decodeNormalizedCenter(data, dims, classes, imgSize, r, dw, dh, confThreshold) {
+    const numDets = dims[1];
+    const boxes = [];
+    for (let i = 0; i < numDets; i++) {
+      const base = i * 6;
+      const score = data[base + 4];
+      if (score < confThreshold) continue;
+      const cls = Math.round(data[base + 5]);
+      const cx = data[base] * imgSize, cy = data[base + 1] * imgSize;
+      const w = data[base + 2] * imgSize, h = data[base + 3] * imgSize;
+      const [x1, y1] = unletterboxPoint(cx - w / 2, cy - h / 2, r, dw, dh);
+      const [x2, y2] = unletterboxPoint(cx + w / 2, cy + h / 2, r, dw, dh);
       boxes.push({ x1, y1, x2, y2, score, cls, label: (classes && classes[cls]) || `class ${cls}` });
     }
     return boxes;
@@ -276,7 +314,17 @@
   }
 
   async function loadModel(url) {
-    return ort.InferenceSession.create(url, { executionProviders: ["wasm"] });
+    // Prefer WebGPU when the browser advertises it — faster than the wasm/CPU
+    // fallback for these model sizes. Not every GPU/driver actually succeeds
+    // at building the graph even when navigator.gpu exists, so on failure we
+    // retry once on wasm rather than surfacing a dead end.
+    const providers = typeof navigator !== "undefined" && navigator.gpu ? ["webgpu", "wasm"] : ["wasm"];
+    try {
+      return await ort.InferenceSession.create(url, { executionProviders: providers });
+    } catch (err) {
+      if (providers[0] !== "webgpu") throw err;
+      return ort.InferenceSession.create(url, { executionProviders: ["wasm"] });
+    }
   }
 
   async function detect(session, imgEl, opts) {
@@ -308,7 +356,9 @@
       boxes = decodeObb(output0.data, dims0, classes, r, dw, dh, confThreshold);
       applyNms = false; // rotated boxes: axis-aligned NMS would be wrong here, and the export already NMS'd
     } else if (lastDim === 6) {
-      boxes = decodeDetection(output0.data, dims0, classes, r, dw, dh, confThreshold);
+      boxes = looksNormalizedCenter(output0.data, dims0)
+        ? decodeNormalizedCenter(output0.data, dims0, classes, imgSize, r, dw, dh, confThreshold)
+        : decodeDetection(output0.data, dims0, classes, r, dw, dh, confThreshold);
     } else {
       boxes = decodeRawHead(output0.data, dims0, classes, r, dw, dh, confThreshold);
     }

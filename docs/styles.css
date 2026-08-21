@@ -456,10 +456,11 @@ a { color: var(--box); }
 .try-conf-label span { color: var(--ink); font-weight: 500; }
 #try-conf { width: 100%; accent-color: var(--box); }
 
+.try-toggles { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 10px; }
 .try-toggle {
   display: flex; align-items: center; gap: 7px;
   font-family: var(--mono); font-size: 0.78rem; color: var(--ink-soft);
-  margin-top: 10px; cursor: pointer; user-select: none;
+  cursor: pointer; user-select: none;
 }
 .try-toggle input { accent-color: var(--box); cursor: pointer; }
 

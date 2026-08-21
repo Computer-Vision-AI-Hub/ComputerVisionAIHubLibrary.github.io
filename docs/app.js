@@ -29,6 +29,7 @@ const els = {
   tryFile:        document.getElementById("try-file"),
   tryConf:        document.getElementById("try-conf"),
   tryConfVal:     document.getElementById("try-conf-val"),
+  tryShowBoxes:   document.getElementById("try-show-boxes"),
   tryShowLabels:  document.getElementById("try-show-labels"),
   tryStatus:      document.getElementById("try-status"),
   tryCanvas:      document.getElementById("try-canvas"),
@@ -232,6 +233,7 @@ function openTryModal(id, triggerEl) {
   els.tryFile.value = "";
   els.tryConf.value = "0.25";
   els.tryConfVal.textContent = "0.25";
+  els.tryShowBoxes.checked = true;
   els.tryShowLabels.checked = true;
   els.tryDetList.innerHTML = "";
   setTryStatus("");
@@ -333,7 +335,8 @@ async function runTry() {
   if (!m || !img) return;
 
   try {
-    setTryStatus(sessionCache.has(m.onnx) ? "Running detection…" : "Loading model…");
+    const loadingMsg = m.size_mb ? `Loading model (${m.size_mb} MB)…` : "Loading model…";
+    setTryStatus(sessionCache.has(m.onnx) ? "Running detection…" : loadingMsg);
     const session = await getSession(m.onnx);
 
     setTryStatus("Running detection…");
@@ -365,6 +368,8 @@ function redrawDetections() {
 }
 
 function drawDetections(detections) {
+  if (!els.tryShowBoxes.checked) return; // boxes off -> just the plain image underneath
+
   const ctx = els.tryCanvas.getContext("2d");
   const scale = tryState.scale || 1;
   const showLabels = els.tryShowLabels.checked;
@@ -546,7 +551,16 @@ if (els.tryModal) {
     if (tryState.imgEl) runTry();
   });
 
-  els.tryShowLabels.addEventListener("change", redrawDetections);
+  // labels need boxes to sit on: turning boxes off also turns labels off,
+  // and turning labels back on brings boxes back with it
+  els.tryShowBoxes.addEventListener("change", () => {
+    if (!els.tryShowBoxes.checked) els.tryShowLabels.checked = false;
+    redrawDetections();
+  });
+  els.tryShowLabels.addEventListener("change", () => {
+    if (els.tryShowLabels.checked) els.tryShowBoxes.checked = true;
+    redrawDetections();
+  });
 }
 
 load();
