@@ -251,6 +251,54 @@
       "image":"assets/previews/FootballPlayerDetection2.png"
     },
     {
+      "id": "barcode-detector",
+      "name": "Barcode detector",
+      "summary": "Performs the barcode detection.",
+      "base_model": "yolo26n",
+      "task": "detection",
+      "classes": [
+        "0"
+      ],
+      "dataset": "https://universe.roboflow.com/barcode-zfxzv/barcode-qzjpx",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.992,
+        "mAP50_95": 0.835,
+        "precision": 0.963,
+        "recall": 0.977
+      },
+      "hf_repo": "lukasiktar11/barcode-detector",
+      "download": "https://huggingface.co/lukasiktar11/barcode-detector/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/barcode-detector/resolve/main/best.onnx",
+      "size_mb": 5.4,
+      "image_size": 640,
+      "image":"assets/previews/BarcodeDetection.jpg"
+    },
+    {
+      "id": "barcode-obb-detector",
+      "name": "Barcode detector OBB",
+      "summary": "Performs the barcode detection.",
+      "base_model": "yolo26n-obb",
+      "task": "obb",
+      "classes": [
+        "0"
+      ],
+      "dataset": "https://universe.roboflow.com/barcodes-cfri0/barcode-960",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.989,
+        "mAP50_95": 0.852,
+        "precision": 0.98,
+        "recall": 0.959
+      },
+      "hf_repo": "lukasiktar11/barcode_obb-detector",
+      "download": "https://huggingface.co/lukasiktar11/barcode_obb-detector/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/barcode_obb-detector/resolve/main/best.onnx",
+      "size_mb": 21.6,
+      "image_size": 640,
+      "image":"assets/previews/BarcodeDetectionOBB.jpg"
+    },
+    {
       "id": "aerial-sheep-detector-yolo26",
       "name": "Aerial Sheep Detector",
       "summary": "Detects sheep in aerial images.",
