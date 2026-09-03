@@ -37,6 +37,42 @@
       "image":"assets/previews/JetsonNanoFrontDetection.png"
     },
     {
+      "id": "jetson-nano-detector2",
+      "name": "Jetson Nano Detector 2",
+      "summary": "Performs the detection of elements on Jetson Nano.",
+      "base_model": "yolo26m",
+      "task": "detection",
+      "classes": [
+        "40_pins",
+        "CAUTION",
+        "Connector_HDMI",
+        "Connector_camera",
+        "Connector_power",
+        "Cooling_system",
+        "Ethernet",
+        "J38",
+        "J40",
+        "Jetson_Nano",
+        "Jetson_Nano_Dev_board",
+        "Power",
+        "USB"
+      ],
+      "dataset": "https://universe.roboflow.com/computervisionaihub-n6cdj/jetson_nano",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.988,
+        "mAP50_95": 0.882,
+        "precision": 0.945,
+        "recall": 0.972
+      },
+      "hf_repo": "lukasiktar11/jetson-nano-detector2",
+      "download": "https://huggingface.co/lukasiktar11/jetson-nano-detector2/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/jetson-nano-detector2/resolve/main/best.onnx",
+      "size_mb": 44.1,
+      "image_size": 640,
+      "image":"assets/previews/JetsonNanoFrontDetection2.jpg"
+    },
+    {
       "id": "raspberry-pi-elements-detector",
       "name": "Raspberry Pi elements detector",
       "summary": "Performs the detection on main elements on Raspberry Pi.",
@@ -297,6 +333,30 @@
       "size_mb": 21.6,
       "image_size": 640,
       "image":"assets/previews/BarcodeDetectionOBB.jpg"
+    },
+    {
+      "id": "barcode-obb-detector2",
+      "name": "Barcode detector OBB 2",
+      "summary": "Performs the barcode detection.",
+      "base_model": "yolo26m-obb",
+      "task": "obb",
+      "classes": [
+        "0"
+      ],
+      "dataset": "https://universe.roboflow.com/barcodes-cfri0/barcode-960",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.99,
+        "mAP50_95": 0.84,
+        "precision": 0.961,
+        "recall": 0.959
+      },
+      "hf_repo": "lukasiktar11/barcode_obb-detector",
+      "download": "https://huggingface.co/lukasiktar11/barcode_obb-detector/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/barcode_obb-detector/resolve/main/best.onnx",
+      "size_mb": 47.6,
+      "image_size": 640,
+      "image":"assets/previews/BarcodeDetectionOBB2.jpg"
     },
     {
       "id": "aerial-sheep-detector-yolo26",
@@ -735,6 +795,99 @@
       "size_mb": 44.1,
       "image_size": 640,
       "image":"assets/previews/LicensePlateOCRDetection3.jpg"
+    },
+    {
+      "id": "military-vehicle-detector-yolo26",
+      "name": "Military Vehicle Detector",
+      "summary": "Detects military vehicles.",
+      "base_model": "yolo26s",
+      "task": "detection",
+      "classes": [
+        "artillery",
+        "car",
+        "explosion",
+        "military_truck",
+        "military_vehicle",
+        "person",
+        "tank",
+        "truck"
+      ],
+      "dataset": "https://universe.roboflow.com/magisterka-gdfg0/military_footage_recognition",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.808,
+        "mAP50_95": 0.492,
+        "precision": 0.796,
+        "recall": 0.763
+      },
+      "hf_repo": "lukasiktar11/military-vehicle-detector-yolo26",
+      "download": "https://huggingface.co/lukasiktar11/military-vehicle-detector-yolo26/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/military-vehicle-detector-yolo26/resolve/main/best.onnx",
+      "size_mb": 20.3,
+      "image_size": 640,
+      "image":"assets/previews/MilitaryVehicleDetection.jpg"
+    },
+    {
+      "id": "military-vehicle-detector2-yolo26",
+      "name": "Military Vehicle Detector 2",
+      "summary": "Detects military vehicles.",
+      "base_model": "yolo26m",
+      "task": "detection",
+      "classes": [
+        "artillery",
+        "car",
+        "explosion",
+        "military_truck",
+        "military_vehicle",
+        "person",
+        "tank",
+        "truck"
+      ],
+      "dataset": "https://universe.roboflow.com/magisterka-gdfg0/military_footage_recognition",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.821,
+        "mAP50_95": 0.505,
+        "precision": 0.855,
+        "recall": 0.743
+      },
+      "hf_repo": "lukasiktar11/military-vehicle-detector2-yolo26",
+      "download": "https://huggingface.co/lukasiktar11/military-vehicle-detector2-yolo26/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/military-vehicle-detector2-yolo26/resolve/main/best.onnx",
+      "size_mb": 20.3,
+      "image_size": 640,
+      "image":"assets/previews/MilitaryVehicleDetection2.jpg"
+    },
+    {
+      "id": "military-vehicle-detector-rt-detr",
+      "name": "Military Vehicle Detector - RT-DETR",
+      "summary": "Detects military vehicles.",
+      "base_model": "rtdetr-l",
+      "task": "detection",
+      "classes": [
+        "artillery",
+        "car",
+        "explosion",
+        "military_truck",
+        "military_vehicle",
+        "person",
+        "tank",
+        "truck"
+      ],
+      "dataset": "https://universe.roboflow.com/magisterka-gdfg0/military_footage_recognition",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.856,
+        "mAP50_95": 0.532,
+        "precision": 0.814,
+        "recall": 0.776
+      },
+      "hf_repo": "lukasiktar11/military-vehicle-detector-rt-detr",
+      "download": "https://huggingface.co/lukasiktar11/military-vehicle-detector-rt-detr/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/military-vehicle-detector-rt-detr/resolve/main/best.onnx",
+      "size_mb": 66.2,
+      "image_size": 640,
+      "image":"assets/previews/MilitaryVehicleDetectionRTDETR.jpg"
     },
     {
       "id": "road-line-segmentator",
