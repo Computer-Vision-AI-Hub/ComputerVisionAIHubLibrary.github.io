@@ -313,12 +313,18 @@
     return finalCanvas;
   }
 
-  async function loadModel(url) {
+  async function loadModel(url, opts) {
     // Prefer WebGPU when the browser advertises it — faster than the wasm/CPU
     // fallback for these model sizes. Not every GPU/driver actually succeeds
     // at building the graph even when navigator.gpu exists, so on failure we
-    // retry once on wasm rather than surfacing a dead end.
-    const providers = typeof navigator !== "undefined" && navigator.gpu ? ["webgpu", "wasm"] : ["wasm"];
+    // retry once on wasm rather than surfacing a dead end. Some failures only
+    // surface later, mid-inference, once a specific op hits an unimplemented
+    // shape-computation path on the GPU backend (seen in practice on iOS
+    // Safari with RT-DETR's MaxPool) — session creation alone can't catch
+    // that, so callers that hit a run-time error should re-call this with
+    // forceWasm to retry the whole session on the CPU backend instead.
+    const forceWasm = opts && opts.forceWasm;
+    const providers = !forceWasm && typeof navigator !== "undefined" && navigator.gpu ? ["webgpu", "wasm"] : ["wasm"];
     try {
       return await ort.InferenceSession.create(url, { executionProviders: providers });
     } catch (err) {

@@ -316,17 +316,49 @@ function drawBaseImage() {
 }
 
 // Sessions are cached per onnx URL so switching models or re-running never re-downloads.
+// Models that fail on the GPU backend mid-inference (see runTry) are remembered here so
+// every later run — this session and future opens — goes straight to the CPU backend
+// instead of repeating a doomed WebGPU attempt first.
+const wasmOnlyModels = new Set();
+const sessionCacheKey = (onnxUrl) => (wasmOnlyModels.has(onnxUrl) ? `${onnxUrl}#wasm` : onnxUrl);
+
 function getSession(onnxUrl) {
-  if (!sessionCache.has(onnxUrl)) {
+  const forceWasm = wasmOnlyModels.has(onnxUrl);
+  const cacheKey = sessionCacheKey(onnxUrl);
+  if (!sessionCache.has(cacheKey)) {
     sessionCache.set(
-      onnxUrl,
-      YOLOWeb.loadModel(onnxUrl).catch((err) => {
-        sessionCache.delete(onnxUrl); // allow retry on the next run
+      cacheKey,
+      YOLOWeb.loadModel(onnxUrl, { forceWasm }).catch((err) => {
+        sessionCache.delete(cacheKey); // allow retry on the next run
         throw err;
       })
     );
   }
-  return sessionCache.get(onnxUrl);
+  return sessionCache.get(cacheKey);
+}
+
+// The actual load+infer+draw attempt, isolated so runTry can retry it once on
+// the CPU backend if the GPU one fails partway through (see runTry).
+async function attemptRun(m, img, confThreshold) {
+  const loadingMsg = m.size_mb ? `Loading model (${m.size_mb} MB)…` : "Loading model…";
+  setTryStatus(sessionCache.has(sessionCacheKey(m.onnx)) ? "Running detection…" : loadingMsg);
+  const session = await getSession(m.onnx);
+
+  setTryStatus("Running detection…");
+  const detections = await YOLOWeb.detect(session, img, {
+    classes: m.classes || [],
+    imgSize: m.image_size || 640,
+    confThreshold,
+    colors: BOX_COLORS,
+  });
+
+  tryState.lastDetections = detections;
+  drawBaseImage();
+  drawDetections(detections);
+  fillDetectionsList(detections);
+  setTryStatus(
+    `${detections.length} detection${detections.length === 1 ? "" : "s"} at ${Math.round(confThreshold * 100)}% confidence.`
+  );
 }
 
 async function runTry() {
@@ -334,28 +366,25 @@ async function runTry() {
   const img = tryState.imgEl;
   if (!m || !img) return;
 
+  const confThreshold = parseFloat(els.tryConf.value);
   try {
-    const loadingMsg = m.size_mb ? `Loading model (${m.size_mb} MB)…` : "Loading model…";
-    setTryStatus(sessionCache.has(m.onnx) ? "Running detection…" : loadingMsg);
-    const session = await getSession(m.onnx);
-
-    setTryStatus("Running detection…");
-    const confThreshold = parseFloat(els.tryConf.value);
-    const detections = await YOLOWeb.detect(session, img, {
-      classes: m.classes || [],
-      imgSize: m.image_size || 640,
-      confThreshold,
-      colors: BOX_COLORS,
-    });
-
-    tryState.lastDetections = detections;
-    drawBaseImage();
-    drawDetections(detections);
-    fillDetectionsList(detections);
-    setTryStatus(
-      `${detections.length} detection${detections.length === 1 ? "" : "s"} at ${Math.round(confThreshold * 100)}% confidence.`
-    );
+    await attemptRun(m, img, confThreshold);
   } catch (err) {
+    // Session creation can succeed on WebGPU while a specific op still isn't
+    // implemented there, only failing once actually run (e.g. RT-DETR's
+    // MaxPool ceil-mode shape computation on iOS Safari's GPU backend).
+    // First failure per model: fall back to the CPU backend and retry once.
+    if (!wasmOnlyModels.has(m.onnx)) {
+      wasmOnlyModels.add(m.onnx);
+      try {
+        setTryStatus("That failed on the GPU backend — retrying on CPU…");
+        await attemptRun(m, img, confThreshold);
+        return;
+      } catch (err2) {
+        setTryStatus(`Error: ${err2 && err2.message ? err2.message : err2}`, true);
+        return;
+      }
+    }
     setTryStatus(`Error: ${err && err.message ? err.message : err}`, true);
   }
 }

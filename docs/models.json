@@ -37,42 +37,6 @@
       "image":"assets/previews/JetsonNanoFrontDetection.png"
     },
     {
-      "id": "jetson-nano-detector2",
-      "name": "Jetson Nano Detector 2",
-      "summary": "Performs the detection of elements on Jetson Nano.",
-      "base_model": "yolo26m",
-      "task": "detection",
-      "classes": [
-        "40_pins",
-        "CAUTION",
-        "Connector_HDMI",
-        "Connector_camera",
-        "Connector_power",
-        "Cooling_system",
-        "Ethernet",
-        "J38",
-        "J40",
-        "Jetson_Nano",
-        "Jetson_Nano_Dev_board",
-        "Power",
-        "USB"
-      ],
-      "dataset": "https://universe.roboflow.com/computervisionaihub-n6cdj/jetson_nano",
-      "dataset_license": "CC BY 4.0",
-      "metrics": {
-        "mAP50": 0.988,
-        "mAP50_95": 0.882,
-        "precision": 0.945,
-        "recall": 0.972
-      },
-      "hf_repo": "lukasiktar11/jetson-nano-detector2",
-      "download": "https://huggingface.co/lukasiktar11/jetson-nano-detector2/resolve/main/best.pt",
-      "onnx": "https://huggingface.co/lukasiktar11/jetson-nano-detector2/resolve/main/best.onnx",
-      "size_mb": 44.1,
-      "image_size": 640,
-      "image":"assets/previews/JetsonNanoFrontDetection2.jpg"
-    },
-    {
       "id": "raspberry-pi-elements-detector",
       "name": "Raspberry Pi elements detector",
       "summary": "Performs the detection on main elements on Raspberry Pi.",
