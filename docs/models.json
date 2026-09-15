@@ -789,7 +789,7 @@
       "onnx": "https://huggingface.co/lukasiktar11/military-vehicle-detector-yolo26/resolve/main/best.onnx",
       "size_mb": 20.3,
       "image_size": 640,
-      "image":"assets/previews/MilitaryVehicleDetection.jpg"
+      "image":"assets/previews/MilitaryVehiclesDetection.jpg"
     },
     {
       "id": "military-vehicle-detector2-yolo26",
@@ -820,7 +820,7 @@
       "onnx": "https://huggingface.co/lukasiktar11/military-vehicle-detector2-yolo26/resolve/main/best.onnx",
       "size_mb": 20.3,
       "image_size": 640,
-      "image":"assets/previews/MilitaryVehicleDetection2.jpg"
+      "image":"assets/previews/MilitaryVehiclesDetection2.jpg"
     },
     {
       "id": "military-vehicle-detector-rt-detr",
@@ -851,7 +851,7 @@
       "onnx": "https://huggingface.co/lukasiktar11/military-vehicle-detector-rt-detr/resolve/main/best.onnx",
       "size_mb": 66.2,
       "image_size": 640,
-      "image":"assets/previews/MilitaryVehicleDetectionRTDETR.jpg"
+      "image":"assets/previews/MilitaryVehiclesDetectionRTDETR.jpg"
     },
     {
       "id": "road-line-segmentator",

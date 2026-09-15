@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- CHANGE THE PLATFORM NAME HERE (and in the <title>, footer, and app.js DOCKER_IMAGE). -->
-  <title>ComputerVisionAIHub — open YOLO model hub</title>
-  <meta name="description" content="A community catalog of custom-trained YOLO models. Download weights or run them locally." />
+  <title>ComputerVisionAIHub — open YOLO/RT-DETR  model hub</title>
+  <meta name="description" content="A community catalog of custom-trained YOLO/RT-DETR models. Download weights or run them locally or try models online." />
   <meta name="theme-color" content="#042C53" />
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
 
-  <!-- Fonts: Space Grotesk (display) + JetBrains Mono (data). Swap these to rebrand the type. -->
+  <!-- Fonts: Space Grotesk (display) + JetBrains Mono (data). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -24,7 +24,7 @@
         <img class="brand-mark" src="assets/icon.svg" alt="" aria-hidden="true" width="36" height="36" />
         <div>
           <h1 class="brand-name">ComputerVision<span class="accent">AIHub</span></h1>
-          <p class="brand-tag">Custom-trained YOLO models, free to download and run.</p>
+          <p class="brand-tag">Custom-trained YOLO/RT-DETR models, free to run try online or download and run locally.</p>
         </div>
       </div>
       <a class="ghost-btn" href="#launch-panel">
@@ -39,7 +39,7 @@
       id="search"
       class="search"
       type="search"
-      placeholder="Search by name, class, or dataset…"
+      placeholder="Search by name, class, model, or dataset…"
       autocomplete="off"
     />
     <div id="task-filters" class="filters" role="group" aria-label="Filter by task">
@@ -72,7 +72,7 @@
       <button class="copy-btn" id="launch-copy" data-cmd="docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py">copy</button>
       <code id="launch-cmd">docker run -p 7860:7860 --entrypoint python docker.io/lukasiktar/computervisionaihub:latest app.py</code>
     </div>
-    <a class="btn primary" href="http://localhost:7860" target="_blank" rel="noopener">Open localhost:7860 →</a>
+    <a class="btn primary" href="http://localhost:7860" target="_blank" rel="noopener">Open localhost →</a>
   </section>
 
   <!-- ============ INSTALLATION GUIDE ============ -->
@@ -132,7 +132,7 @@ sudo systemctl restart docker</code>
   <!-- ============ FOOTER ============ -->
   <footer class="site-footer">
     <div class="wrap">
-      <p>ComputerVisionAIHub · open source · models licensed individually — check each dataset license before commercial use.</p>
+      <p>ComputerVisionAIHub is open source under the <a href="https://github.com/lukasiktar/ComputerVisionAIHub/blob/main/LICENSE" target="_blank" rel="noopener">GNU AGPL-3.0</a> license, inherited from the <a href="https://github.com/ultralytics/ultralytics" target="_blank" rel="noopener">Ultralytics YOLO</a> library used for training and Docker-based inference. The "Try in Browser" runner instead uses <a href="https://github.com/microsoft/onnxruntime" target="_blank" rel="noopener">ONNX Runtime Web</a> (MIT license), so running a model fully client-side carries no AGPL obligations. Each model's dataset has its own license, shown on its card — check it before any commercial use.</p>
     </div>
   </footer>
 
@@ -144,7 +144,7 @@ sudo systemctl restart docker</code>
         <button id="try-modal-close" class="modal-close" aria-label="Close">✕</button>
       </div>
 
-      <p class="modal-note">Runs fully client-side with onnxruntime-web — nothing is uploaded. The model file downloads once and stays cached in this tab.</p>
+      <p class="modal-note">Runs fully client-side — nothing is uploaded. The model file downloads once and stays cached in this tab.</p>
 
       <p id="try-upload-label" class="try-upload-label" hidden>Upload a new image</p>
 
