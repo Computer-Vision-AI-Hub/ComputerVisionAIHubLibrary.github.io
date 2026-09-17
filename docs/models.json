@@ -3,10 +3,10 @@
   "models": [
 
     {
-      "id": "jetson-nano-detection",
-      "name": "Jetson Nano elements Detector",
-      "summary": "Detects structural elements of the Jetson Nano.",
-      "base_model": "yolo26n",
+      "id": "jetson-nano-detector",
+      "name": "Jetson Nano Detector",
+      "summary": "Performs the detection of elements on Jetson Nano.",
+      "base_model": "yolo26s",
       "task": "detection",
       "classes": [
         "40_pins",
@@ -23,18 +23,21 @@
         "Power",
         "USB"
       ],
-      "dataset": "https://universe.roboflow.com/fmena-dwmmh/jetson_nano",
+      "dataset": "https://universe.roboflow.com/computervisionaihub-n6cdj/jetson_nano",
       "dataset_license": "CC BY 4.0",
       "metrics": {
-        "mAP50": 0.954,
-        "mAP50_95": 0.832
+        "mAP50": 0.995,
+        "mAP50_95": 0.856,
+        "precision": 0.983,
+        "recall": 0.983
       },
-      "hf_repo": "lukasiktar11/jetson_nano_detection",
-      "download": "https://huggingface.co/lukasiktar11/jetson_nano_detector2/resolve/main/best.pt",
-      "onnx": "https://huggingface.co/lukasiktar11/jetson_nano_detector2/resolve/main/best.onnx",
-      "size_mb": 5.4,
+      "hf_repo": "lukasiktar11/jetson-nano-detector",
+      "download": "https://huggingface.co/lukasiktar11/jetson-nano-detector/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/jetson-nano-detector/resolve/main/best.onnx",
+      "size_mb": 20.3,
       "image_size": 640,
       "image":"assets/previews/JetsonNanoFrontDetection.png"
+
     },
     {
       "id": "jetson-nano-detector2",
