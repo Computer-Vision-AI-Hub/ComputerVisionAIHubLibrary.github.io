@@ -30,11 +30,47 @@
         "mAP50_95": 0.832
       },
       "hf_repo": "lukasiktar11/jetson_nano_detection",
-      "download": "https://huggingface.co/lukasiktar11/jetson_nano_detection/resolve/main/best.pt",
-      "onnx": "https://huggingface.co/lukasiktar11/jetson_nano_detection/resolve/main/best.onnx",
+      "download": "https://huggingface.co/lukasiktar11/jetson_nano_detector2/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/jetson_nano_detector2/resolve/main/best.onnx",
       "size_mb": 5.4,
       "image_size": 640,
       "image":"assets/previews/JetsonNanoFrontDetection.png"
+    },
+    {
+      "id": "jetson-nano-detector2",
+      "name": "Jetson Nano Detector 2",
+      "summary": "Performs the detection of elements on Jetson Nano.",
+      "base_model": "yolo26m",
+      "task": "detection",
+      "classes": [
+        "40_pins",
+        "CAUTION",
+        "Connector_HDMI",
+        "Connector_camera",
+        "Connector_power",
+        "Cooling_system",
+        "Ethernet",
+        "J38",
+        "J40",
+        "Jetson_Nano",
+        "Jetson_Nano_Dev_board",
+        "Power",
+        "USB"
+      ],
+      "dataset": "https://universe.roboflow.com/computervisionaihub-n6cdj/jetson_nano",
+      "dataset_license": "CC BY 4.0",
+      "metrics": {
+        "mAP50": 0.995,
+        "mAP50_95": 0.903,
+        "precision": 0.994,
+        "recall": 0.996
+      },
+      "hf_repo": "lukasiktar11/jetson-nano-detector2",
+      "download": "https://huggingface.co/lukasiktar11/jetson-nano-detector2/resolve/main/best.pt",
+      "onnx": "https://huggingface.co/lukasiktar11/jetson-nano-detector2/resolve/main/best.onnx",
+      "size_mb": 44.1,
+      "image_size": 640,
+      "image": "assets/previews/JetsonNanoFrontDetection2.jpg"
     },
     {
       "id": "raspberry-pi-elements-detector",
