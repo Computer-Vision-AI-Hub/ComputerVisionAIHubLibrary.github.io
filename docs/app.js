@@ -51,7 +51,19 @@ const esc = (s) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 // ---- 1. LOAD ----
+function renderSkeletons(count = 6) {
+  els.grid.innerHTML = Array.from({ length: count }, () => `
+    <div class="model-card skeleton" aria-hidden="true">
+      <div class="skeleton-block skeleton-image"></div>
+      <div class="skeleton-block skeleton-line" style="width:65%"></div>
+      <div class="skeleton-block skeleton-line" style="width:40%"></div>
+      <div class="skeleton-block skeleton-line" style="width:90%"></div>
+      <div class="skeleton-block skeleton-line" style="width:80%"></div>
+    </div>`).join("");
+}
+
 async function load() {
+  renderSkeletons();
   try {
     // cache:no-store so contributors see new models without a hard refresh
     const res = await fetch("models.json", { cache: "no-store" });
@@ -108,6 +120,19 @@ function render() {
   els.grid.innerHTML = list.map(card).join("");
   wireCopyButtons();
   wireTryButtons();
+  animateMetricBars();
+}
+
+// Bars render at width:0 so the fill transition (see .bar > span in styles.css)
+// has something to animate from; two rAFs ensure the 0% state actually paints
+// before the target width is applied.
+function animateMetricBars() {
+  const bars = els.grid.querySelectorAll(".bar > span");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bars.forEach((el) => { el.style.transform = `scaleX(${el.dataset.pct / 100})`; });
+    });
+  });
 }
 
 // ---- 4. ONE CARD (template per model) ----
@@ -125,7 +150,7 @@ function card(m) {
     const pct = Math.round((val ?? 0) * 100);
     return `<div class="metric">
       <span class="metric-label">${label}</span>
-      <div class="bar"><span style="width:${pct}%"></span></div>
+      <div class="bar"><span data-pct="${pct}"></span></div>
       <span class="metric-val">${(val ?? 0).toFixed(2)}</span>
     </div>`;
   };
@@ -147,56 +172,76 @@ function card(m) {
       <p class="card-summary">${esc(m.summary || "")}</p>
     </div>
 
-    <div class="badges">
-      <span class="badge base">${esc(m.base_model || "yolo")}</span>
-      <span class="badge task-${esc(m.task || "detection")}">${esc(m.task || "detection")}</span>
-      <span class="badge">${esc(m.image_size || 640)}px</span>
-    </div>
+    <span class="card-hint">Hover for specs, metrics &amp; download ↓</span>
 
-    <div class="chips">${chips}</div>
+    <div class="card-extra">
+      <div class="card-extra-inner">
+        <div class="badges">
+          <span class="badge base">${esc(m.base_model || "yolo")}</span>
+          <span class="badge task-${esc(m.task || "detection")}">${esc(m.task || "detection")}</span>
+          <span class="badge">${esc(m.image_size || 640)}px</span>
+        </div>
 
-    <div class="metrics">
-      ${m.metrics ? metric("mAP@50", m.metrics.mAP50) : ""}
-      ${m.metrics ? metric("mAP@50-95", m.metrics.mAP50_95) : ""}
-      ${m.metrics && m.metrics.precision != null ? metric("precision", m.metrics.precision) : ""}
-      ${m.metrics && m.metrics.recall != null ? metric("recall", m.metrics.recall) : ""}
-    </div>
+        <div class="chips">${chips}</div>
 
-    <div class="card-meta">
-      <span>${m.size_mb ?? "?"} MB</span>
-      <span>license: ${esc(m.dataset_license || "see dataset")}</span>
-    </div>
+        <div class="metrics">
+          ${m.metrics ? metric("mAP@50", m.metrics.mAP50) : ""}
+          ${m.metrics ? metric("mAP@50-95", m.metrics.mAP50_95) : ""}
+          ${m.metrics && m.metrics.precision != null ? metric("precision", m.metrics.precision) : ""}
+          ${m.metrics && m.metrics.recall != null ? metric("recall", m.metrics.recall) : ""}
+        </div>
 
-    <div class="actions">
-      <a class="btn primary" href="${esc(m.download)}" download>Download .pt</a>
-      ${m.onnx ? `<a class="btn secondary" href="${esc(m.onnx)}" download>.onnx</a>` : ""}
-      ${m.dataset ? `<a class="btn secondary" href="${esc(m.dataset)}" target="_blank" rel="noopener">Dataset</a>` : ""}
-    </div>
+        <div class="card-meta">
+          <span>${m.size_mb ?? "?"} MB</span>
+          <span>license: ${esc(m.dataset_license || "see dataset")}</span>
+        </div>
 
-    ${canTryInBrowser ? `<div class="actions">
-      <button type="button" class="btn try-btn" data-model-id="${esc(m.id)}">Try in browser ▶</button>
-    </div>` : ""}
+        <div class="actions">
+          <a class="btn primary" href="${esc(m.download)}" download>Download .pt</a>
+          ${m.onnx ? `<a class="btn secondary" href="${esc(m.onnx)}" download>.onnx</a>` : ""}
+          ${m.dataset ? `<a class="btn secondary" href="${esc(m.dataset)}" target="_blank" rel="noopener">Dataset</a>` : ""}
+        </div>
 
-    <div class="run-group">
-      <span class="run-label">Model URL — paste into localhost:7860</span>
-      <div class="run">
-        <button class="copy-btn" data-cmd="${esc(m.download)}">copy</button>
-        <code>${esc(m.download)}</code>
+        ${canTryInBrowser ? `<div class="actions">
+          <button type="button" class="btn try-btn" data-model-id="${esc(m.id)}">Try in browser ▶</button>
+        </div>` : ""}
+
+        <div class="run-group">
+          <span class="run-label">Model URL — paste into localhost:7860</span>
+          <div class="run">
+            <button class="copy-btn" data-cmd="${esc(m.download)}">copy</button>
+            <code>${esc(m.download)}</code>
+          </div>
+        </div>
       </div>
     </div>
   </article>`;
 }
 
 // ---- 5. COPY BUTTONS ----
+const COPY_ICON = `<svg class="copy-icon icon-copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const CHECK_ICON = `<svg class="copy-icon icon-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
+
 function wireCopyButton(btn) {
+  // Idempotent: the same buttons get re-wired every render() call, so skip
+  // re-injecting the icon markup if this button already has it.
+  if (!btn.querySelector(".copy-label")) {
+    const label = btn.textContent.trim() || "copy";
+    btn.innerHTML = `${COPY_ICON}${CHECK_ICON}<span class="copy-label">${esc(label)}</span>`;
+  }
+  const label = btn.querySelector(".copy-label");
   btn.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(btn.dataset.cmd);
-      const old = btn.textContent;
-      btn.textContent = "copied";
-      setTimeout(() => (btn.textContent = old), 1200);
+      const old = label.textContent;
+      btn.classList.add("copied");
+      label.textContent = "copied";
+      setTimeout(() => {
+        btn.classList.remove("copied");
+        label.textContent = old;
+      }, 1200);
     } catch {
-      btn.textContent = "press ⌘C";
+      label.textContent = "press ⌘C";
     }
   });
 }

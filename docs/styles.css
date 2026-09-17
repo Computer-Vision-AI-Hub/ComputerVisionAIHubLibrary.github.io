@@ -24,7 +24,7 @@
   /* ---- type ---- */
   --display: "Space Grotesk", system-ui, sans-serif;
   --mono:    "JetBrains Mono", ui-monospace, monospace;
-  --body:    system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --body:    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   --radius: 12px;
   --maxw: 1100px;
@@ -49,13 +49,22 @@ a { color: var(--box); }
 
 /* ============ HEADER (hero) ============ */
 .site-header {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(135deg, #042C53 0%, #0B3D6E 60%, #103F71 100%);
 }
+.site-header::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(560px circle at 12% 15%, color-mix(in srgb, var(--mint-bright) 16%, transparent), transparent 60%);
+  pointer-events: none;
+}
 .header-inner {
+  position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: space-between;
   gap: 24px; padding-block: 26px;
 }
-.brand { display: flex; align-items: center; gap: 14px; }
+.brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
 
 /* The brand mark is the aperture icon from assets/icon.svg. */
 .brand-mark {
@@ -81,6 +90,7 @@ a { color: var(--box); }
   transition: border-color .15s, color .15s, background-color .15s;
 }
 .ghost-btn:hover { border-color: var(--mint-bright); color: var(--mint-bright); background: rgba(255,255,255,.06); }
+.ghost-btn:active { transform: scale(.97); }
 .ghost-btn:focus-visible { outline: 2px solid var(--mint-bright); outline-offset: 1px; }
 
 /* ============ LAUNCH PANEL ============ */
@@ -124,6 +134,7 @@ a { color: var(--box); }
   transition: all .15s;
 }
 .pill:hover { border-color: var(--box); color: var(--ink); }
+.pill:active { transform: scale(.96); }
 .pill[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
 .pill:focus-visible { outline: 2px solid var(--box); outline-offset: 1px; }
 
@@ -149,6 +160,7 @@ a { color: var(--box); }
 .grid {
   display: grid; column-gap: 20px; row-gap: 40px; padding-block: 40px 60px;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  align-items: start;
   /* extra top/row spacing gives the card-tab room to float above each card
      (see .card-tab) without colliding with the row above or the toolbar */
 }
@@ -187,7 +199,7 @@ a { color: var(--box); }
 
 /* Preview image — a sample of what the model detects. */
 .card-image {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1 / 1;
   border-radius: calc(var(--radius) - 6px);
   overflow: hidden;
   background: var(--paper);
@@ -195,8 +207,10 @@ a { color: var(--box); }
 }
 .card-image img {
   width: 100%; height: 100%;
-  object-fit: cover; display: block;
+  object-fit: contain; display: block;
+  transition: transform .35s ease;
 }
+.model-card:hover .card-image img { transform: scale(1.04); }
 .card-image.placeholder {
   display: flex; align-items: center; justify-content: center;
   border-style: dashed;
@@ -213,6 +227,45 @@ a { color: var(--box); }
   margin: 0; letter-spacing: -0.01em;
 }
 .card-summary { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
+
+/* ---- hover-to-reveal: specs/metrics/actions stay collapsed until the card
+   is hovered or focused, so the summary view is just image + name + blurb.
+   Only enabled for mouse-like pointers (see media query below) — touch and
+   keyboard-only visitors get everything expanded, since there's no reliable
+   hover for them to trigger the reveal. ---- */
+.card-hint {
+  display: none;
+  font-family: var(--mono); font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+.card-extra-inner { display: flex; flex-direction: column; gap: 14px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .card-hint { display: block; transition: opacity .2s ease; }
+  .card-extra {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .35s ease;
+  }
+  .card-extra-inner {
+    overflow: hidden; min-height: 0;
+    opacity: 0;
+    transition: opacity .25s ease;
+  }
+  .model-card:hover .card-extra,
+  .model-card:focus-within .card-extra {
+    grid-template-rows: 1fr;
+  }
+  .model-card:hover .card-extra-inner,
+  .model-card:focus-within .card-extra-inner {
+    opacity: 1;
+    transition-delay: .08s;
+  }
+  .model-card:hover .card-hint,
+  .model-card:focus-within .card-hint {
+    opacity: 0;
+  }
+}
 
 .badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .badge {
@@ -240,7 +293,11 @@ a { color: var(--box); }
 .metric { display: grid; grid-template-columns: 86px 1fr 46px; align-items: center; gap: 10px; }
 .metric-label { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-soft); }
 .bar { height: 7px; background: var(--paper); border-radius: 999px; overflow: hidden; }
-.bar > span { display: block; height: 100%; background: var(--box); border-radius: 999px; }
+.bar > span {
+  display: block; height: 100%; width: 100%; background: var(--box); border-radius: 999px;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .7s cubic-bezier(.22,.9,.3,1);
+}
 .metric-val { font-family: var(--mono); font-size: 0.75rem; text-align: right; }
 
 .card-meta {
@@ -268,6 +325,7 @@ a { color: var(--box); }
 }
 .btn.secondary { background: var(--surface); color: var(--ink); border-color: var(--line); }
 .btn.secondary:hover { border-color: var(--ink); }
+.btn:active { transform: translateY(0) scale(.97); }
 .btn:focus-visible { outline: 2px solid var(--box); outline-offset: 1px; }
 
 /* copyable command / URL box, with an optional label above it.
@@ -291,19 +349,36 @@ a { color: var(--box); }
 .copy-btn {
   position: sticky; left: 0; z-index: 1;
   flex: none;
+  display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--mono); font-size: 0.68rem;
   background: color-mix(in srgb, var(--ink) 92%, #000 8%);
   color: #C7CDD6; border: 1px solid rgba(255,255,255,.16);
   border-radius: 6px; padding: 5px 10px; cursor: pointer;
   box-shadow: 10px 0 10px -6px var(--ink);
+  transition: color .15s, border-color .15s, transform .1s;
 }
 .copy-btn:hover { color: #fff; border-color: rgba(255,255,255,.35); }
+.copy-btn:active { transform: scale(.96); }
 .copy-btn:focus-visible { outline: 2px solid var(--mint-bright); outline-offset: 1px; }
+.copy-icon { flex: none; display: none; }
+.copy-btn .icon-copy { display: block; }
+.copy-btn.copied { color: var(--mint-bright); border-color: color-mix(in srgb, var(--mint-bright) 45%, transparent); }
+.copy-btn.copied .icon-copy { display: none; }
+.copy-btn.copied .icon-check { display: block; }
 
 /* multi-line variant, for install scripts rather than one-line commands */
 .run.multiline { align-items: flex-start; }
 .run.multiline code { white-space: pre; padding: 8px 8px 8px 2px; line-height: 1.6; }
 .run.multiline .copy-btn { margin-top: 2px; }
+
+/* ============ LOADING SKELETON ============ */
+.model-card.skeleton { pointer-events: none; }
+.skeleton-block {
+  position: relative; overflow: hidden;
+  background: var(--line); border-radius: 8px;
+}
+.skeleton-image { aspect-ratio: 1 / 1; border-radius: calc(var(--radius) - 6px); }
+.skeleton-line { height: 13px; margin: 5px 0; }
 
 /* ============ STATE (empty / error) ============ */
 .state {
@@ -500,6 +575,17 @@ body.modal-open { overflow: hidden; }
 
   .modal { animation: modal-in .18s ease both; }
   @keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+
+  .skeleton-block::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 70%, transparent), transparent);
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+  }
 }
 
 @media (max-width: 560px) {
