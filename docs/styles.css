@@ -465,6 +465,22 @@ a { color: var(--box); }
 
 .modal-note { color: var(--ink-soft); font-size: 0.82rem; margin: 10px 0 16px; }
 
+/* model download progress — shown the instant the modal opens, before the
+   user has even picked an image; reuses the .bar transform-fill pattern
+   from the catalog card metrics (see .bar > span) */
+.try-progress-wrap { margin: 0 0 16px; }
+.try-progress-label {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.try-progress-pct { color: var(--ink); font-weight: 500; flex: none; }
+.try-progress-bar { height: 6px; }
+/* download progress ticks many times a second — a snappier transition than
+   the one-shot card metric bars (.bar > span) keeps it feeling responsive
+   instead of lagging behind the real transfer */
+.try-progress-bar > span { transition-duration: .15s; transition-timing-function: linear; }
+
 /* label only appears once an image has been set, right above the box */
 .try-upload-label {
   font-family: var(--mono); font-size: 0.7rem; font-weight: 500;

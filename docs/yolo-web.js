@@ -313,6 +313,40 @@
     return finalCanvas;
   }
 
+  // Fetches the .onnx file ourselves (instead of handing the URL straight to
+  // ort.InferenceSession.create) so download progress can be reported back —
+  // ORT's own URL loading gives no such hook. Falls back to a single opaque
+  // read if the response can't be streamed (older Safari, some proxies).
+  async function fetchModelBuffer(url, onProgress) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching model`);
+    const total = Number(res.headers.get("Content-Length")) || 0;
+
+    if (!res.body || !res.body.getReader) {
+      const buf = await res.arrayBuffer();
+      if (onProgress) onProgress(buf.byteLength, buf.byteLength || total);
+      return buf;
+    }
+
+    const reader = res.body.getReader();
+    const chunks = [];
+    let received = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      if (onProgress) onProgress(received, total);
+    }
+    const buf = new Uint8Array(received);
+    let offset = 0;
+    for (const chunk of chunks) {
+      buf.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return buf.buffer;
+  }
+
   async function loadModel(url, opts) {
     // Prefer WebGPU when the browser advertises it — faster than the wasm/CPU
     // fallback for these model sizes. Not every GPU/driver actually succeeds
@@ -324,12 +358,14 @@
     // that, so callers that hit a run-time error should re-call this with
     // forceWasm to retry the whole session on the CPU backend instead.
     const forceWasm = opts && opts.forceWasm;
+    const onProgress = opts && opts.onProgress;
     const providers = !forceWasm && typeof navigator !== "undefined" && navigator.gpu ? ["webgpu", "wasm"] : ["wasm"];
+    const buffer = await fetchModelBuffer(url, onProgress);
     try {
-      return await ort.InferenceSession.create(url, { executionProviders: providers });
+      return await ort.InferenceSession.create(buffer, { executionProviders: providers });
     } catch (err) {
       if (providers[0] !== "webgpu") throw err;
-      return ort.InferenceSession.create(url, { executionProviders: ["wasm"] });
+      return ort.InferenceSession.create(buffer, { executionProviders: ["wasm"] });
     }
   }
 

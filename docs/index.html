@@ -146,6 +146,14 @@ sudo systemctl restart docker</code>
 
       <p class="modal-note">Runs fully client-side — nothing is uploaded. The model file downloads once and stays cached in this tab.</p>
 
+      <div id="try-progress-wrap" class="try-progress-wrap" hidden aria-live="polite">
+        <div class="try-progress-label">
+          <span id="try-progress-text">Downloading model…</span>
+          <span id="try-progress-pct">0%</span>
+        </div>
+        <div class="bar try-progress-bar"><span id="try-progress-fill"></span></div>
+      </div>
+
       <p id="try-upload-label" class="try-upload-label" hidden>Upload a new image</p>
 
       <div id="try-drop" class="try-drop">

@@ -34,6 +34,11 @@ const els = {
   tryStatus:      document.getElementById("try-status"),
   tryCanvas:      document.getElementById("try-canvas"),
   tryDetList:     document.getElementById("try-detections-list"),
+
+  tryProgressWrap: document.getElementById("try-progress-wrap"),
+  tryProgressText: document.getElementById("try-progress-text"),
+  tryProgressPct:  document.getElementById("try-progress-pct"),
+  tryProgressFill: document.getElementById("try-progress-fill"),
 };
 
 // ---- Try-in-browser state ----
@@ -288,6 +293,8 @@ function openTryModal(id, triggerEl) {
   els.tryModal.hidden = false;
   document.body.classList.add("modal-open");
   els.tryModalClose.focus();
+
+  prefetchModel(m);
 }
 
 function closeTryModal() {
@@ -367,27 +374,97 @@ function drawBaseImage() {
 const wasmOnlyModels = new Set();
 const sessionCacheKey = (onnxUrl) => (wasmOnlyModels.has(onnxUrl) ? `${onnxUrl}#wasm` : onnxUrl);
 
+// Download progress, keyed by the plain onnx URL (not the cache key, so a
+// wasm-fallback retry still reports against the same UI). fullyLoaded lets
+// prefetchModel skip the progress bar entirely for a model already in cache.
+const downloadProgress = new Map();
+const fullyLoaded = new Set();
+
+function reportProgress(onnxUrl, loaded, total) {
+  downloadProgress.set(onnxUrl, { loaded, total });
+  // Only touch the DOM if the modal is still showing *this* model — avoids a
+  // stale download (e.g. the modal was closed and reopened on another card)
+  // painting over the currently visible progress bar.
+  if (tryState.model && tryState.model.onnx === onnxUrl) {
+    updateProgressUI(loaded, total);
+  }
+}
+
 function getSession(onnxUrl) {
   const forceWasm = wasmOnlyModels.has(onnxUrl);
   const cacheKey = sessionCacheKey(onnxUrl);
   if (!sessionCache.has(cacheKey)) {
     sessionCache.set(
       cacheKey,
-      YOLOWeb.loadModel(onnxUrl, { forceWasm }).catch((err) => {
-        sessionCache.delete(cacheKey); // allow retry on the next run
-        throw err;
+      YOLOWeb.loadModel(onnxUrl, {
+        forceWasm,
+        onProgress: (loaded, total) => reportProgress(onnxUrl, loaded, total),
       })
+        .then((session) => {
+          fullyLoaded.add(onnxUrl);
+          return session;
+        })
+        .catch((err) => {
+          sessionCache.delete(cacheKey); // allow retry on the next run
+          throw err;
+        })
     );
   }
   return sessionCache.get(cacheKey);
 }
 
+// Kicked off the instant "Try in browser" is clicked — the model starts
+// downloading before the user has picked an image, so it's usually ready by
+// the time they do.
+function prefetchModel(m) {
+  if (!m.onnx) return;
+  if (fullyLoaded.has(m.onnx)) {
+    hideProgress();
+    return;
+  }
+  const known = downloadProgress.get(m.onnx) || { loaded: 0, total: 0 };
+  showProgress(known.loaded, known.total);
+  getSession(m.onnx).then(hideProgress, hideProgress); // real errors surface when the user actually runs detection
+}
+
+function showProgress(loaded, total) {
+  if (!els.tryProgressWrap) return;
+  els.tryProgressWrap.hidden = false;
+  updateProgressUI(loaded, total);
+}
+
+function hideProgress() {
+  if (els.tryProgressWrap) els.tryProgressWrap.hidden = true;
+}
+
+function updateProgressUI(loaded, total) {
+  if (!els.tryProgressWrap || els.tryProgressWrap.hidden) return;
+  const mb = (n) => (n / (1024 * 1024)).toFixed(1);
+  if (total > 0) {
+    const pct = Math.min(100, Math.round((loaded / total) * 100));
+    els.tryProgressFill.style.transform = `scaleX(${pct / 100})`;
+    els.tryProgressPct.textContent = `${pct}%`;
+    els.tryProgressText.textContent = `Downloading model… ${mb(loaded)} / ${mb(total)} MB`;
+  } else if (loaded > 0) {
+    // no Content-Length header to compute a percentage from — show bytes so far instead
+    els.tryProgressFill.style.transform = "scaleX(1)";
+    els.tryProgressPct.textContent = "";
+    els.tryProgressText.textContent = `Downloading model… ${mb(loaded)} MB`;
+  } else {
+    els.tryProgressFill.style.transform = "scaleX(0)";
+    els.tryProgressPct.textContent = "";
+    els.tryProgressText.textContent = "Downloading model…";
+  }
+}
+
 // The actual load+infer+draw attempt, isolated so runTry can retry it once on
 // the CPU backend if the GPU one fails partway through (see runTry).
 async function attemptRun(m, img, confThreshold) {
-  const loadingMsg = m.size_mb ? `Loading model (${m.size_mb} MB)…` : "Loading model…";
-  setTryStatus(sessionCache.has(sessionCacheKey(m.onnx)) ? "Running detection…" : loadingMsg);
+  if (!fullyLoaded.has(m.onnx)) {
+    setTryStatus("Waiting for the model download to finish…");
+  }
   const session = await getSession(m.onnx);
+  hideProgress();
 
   setTryStatus("Running detection…");
   const detections = await YOLOWeb.detect(session, img, {
