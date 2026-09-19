@@ -6,9 +6,12 @@
    preprocess -> session.run -> decode -> NMS) entirely in the tab.
    No server, no build step.
 
-   Supports plain detection, OBB (rotated boxes), and segmentation
-   (instance masks) — the export shape on session output0 tells
-   decode() which one it's looking at (see decode() below).
+   Supports detection, OBB (rotated boxes), segmentation (instance masks),
+   classification, and pose. Detection/OBB/segmentation are told apart by
+   the export shape on session output0 (see decode() below); classification
+   and pose need the model's declared task passed in explicitly (opts.task)
+   since their output shapes aren't reliably distinguishable from the others
+   by inspection alone.
 
    Pin note: the onnxruntime-web version below MUST match the CDN
    <script> tag loaded in index.html — mismatched JS/wasm builds
@@ -221,6 +224,127 @@
     return boxes;
   }
 
+  // ---- Pose ----
+  // Single-class ("person") detections with per-keypoint x,y,visibility
+  // triplets appended. Export layout depends on whether NMS is baked in,
+  // same split as decodeDetection/decodeRawHead above:
+  //  - raw head (no nms=True at export):   [1, 5+3*nkpt, numAnchors], plane-major
+  //  - end-to-end (nms=True at export):    [1, numDets, 6+3*nkpt], row-major
+  // Anchor counts run in the thousands while Ultralytics caps numDets at
+  // 300, so comparing dims[1] vs dims[2] reliably tells the two apart —
+  // same trick as looksNormalizedCenter() above, just on different axes.
+  function decodePoseRaw(data, dims, r, dw, dh, confThreshold) {
+    const numAnchors = dims[2];
+    const numKpts = (dims[1] - 5) / 3;
+    const value = (attr, i) => data[attr * numAnchors + i];
+    const boxes = [];
+    for (let i = 0; i < numAnchors; i++) {
+      const conf = value(4, i);
+      if (conf < confThreshold) continue;
+      const cx = value(0, i), cy = value(1, i), w = value(2, i), h = value(3, i);
+      const [x1, y1] = unletterboxPoint(cx - w / 2, cy - h / 2, r, dw, dh);
+      const [x2, y2] = unletterboxPoint(cx + w / 2, cy + h / 2, r, dw, dh);
+      const keypoints = [];
+      for (let k = 0; k < numKpts; k++) {
+        const [px, py] = unletterboxPoint(value(5 + k * 3, i), value(5 + k * 3 + 1, i), r, dw, dh);
+        keypoints.push({ x: px, y: py, score: value(5 + k * 3 + 2, i) });
+      }
+      boxes.push({ x1, y1, x2, y2, score: conf, cls: 0, label: "person", keypoints });
+    }
+    return boxes;
+  }
+
+  function decodePoseEndToEnd(data, dims, r, dw, dh, confThreshold) {
+    const numDets = dims[1];
+    const rowLen = dims[2];
+    const numKpts = (rowLen - 6) / 3;
+    const boxes = [];
+    for (let i = 0; i < numDets; i++) {
+      const base = i * rowLen;
+      const score = data[base + 4];
+      if (score < confThreshold) continue;
+      const [x1, y1] = unletterboxPoint(data[base], data[base + 1], r, dw, dh);
+      const [x2, y2] = unletterboxPoint(data[base + 2], data[base + 3], r, dw, dh);
+      const keypoints = [];
+      for (let k = 0; k < numKpts; k++) {
+        const kb = base + 6 + k * 3;
+        const [px, py] = unletterboxPoint(data[kb], data[kb + 1], r, dw, dh);
+        keypoints.push({ x: px, y: py, score: data[kb + 2] });
+      }
+      boxes.push({ x1, y1, x2, y2, score, cls: 0, label: "person", keypoints });
+    }
+    return boxes;
+  }
+
+  function decodePose(data, dims, r, dw, dh, confThreshold) {
+    const rawLayout = dims[1] < dims[2];
+    return rawLayout
+      ? decodePoseRaw(data, dims, r, dw, dh, confThreshold)
+      : decodePoseEndToEnd(data, dims, r, dw, dh, confThreshold);
+  }
+
+  // ---- Classification ----
+  // Resize the shorter side to imgSize then center-crop to imgSize x imgSize
+  // — Ultralytics' classify_transforms, and deliberately NOT the letterbox
+  // pad used for detection: there's no box to undo the padding for
+  // afterward, and center-cropping matches what the model was trained on.
+  function classifyPreprocess(imgEl, imgSize) {
+    const srcW = imgEl.naturalWidth || imgEl.width;
+    const srcH = imgEl.naturalHeight || imgEl.height;
+    const scale = imgSize / Math.min(srcW, srcH);
+    const resizedW = Math.round(srcW * scale);
+    const resizedH = Math.round(srcH * scale);
+    const sx = (resizedW - imgSize) / 2;
+    const sy = (resizedH - imgSize) / 2;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = imgSize;
+    canvas.height = imgSize;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(imgEl, 0, 0, srcW, srcH, -sx, -sy, resizedW, resizedH);
+
+    const { data } = ctx.getImageData(0, 0, imgSize, imgSize);
+    const chw = new Float32Array(3 * imgSize * imgSize);
+    const plane = imgSize * imgSize;
+    for (let i = 0; i < plane; i++) {
+      const o = i * 4;
+      chw[i] = data[o] / 255;
+      chw[plane + i] = data[o + 1] / 255;
+      chw[2 * plane + i] = data[o + 2] / 255;
+    }
+    return new ort.Tensor("float32", chw, [1, 3, imgSize, imgSize]);
+  }
+
+  function softmax(arr) {
+    const max = Math.max(...arr);
+    const exps = arr.map((v) => Math.exp(v - max));
+    const sum = exps.reduce((a, b) => a + b, 0);
+    return exps.map((v) => v / sum);
+  }
+
+  // Top-5 class probabilities, no boxes. Some exports bake a final softmax
+  // into the graph and some don't (version-dependent) — detect raw logits
+  // (negatives, or a sum far from 1) and normalize ourselves so the UI
+  // always gets comparable probabilities either way.
+  async function detectClassification(session, imgEl, imgSize, classes, confThreshold) {
+    const tensor = classifyPreprocess(imgEl, imgSize);
+    const feeds = {};
+    feeds[session.inputNames[0]] = tensor;
+    const results = await session.run(feeds);
+    const output0 = results[session.outputNames[0]];
+    let scores = Array.from(output0.data);
+
+    const sum = scores.reduce((a, b) => a + b, 0);
+    const looksLikeProbabilities = scores.every((v) => v >= -1e-4) && Math.abs(sum - 1) < 0.05;
+    if (!looksLikeProbabilities) scores = softmax(scores);
+
+    return scores
+      .map((score, cls) => ({ cls, score, label: (classes && classes[cls]) || `class ${cls}` }))
+      .filter((d) => d.score >= confThreshold)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+  }
+
   // Segmentation end-to-end detections: [1, numDets, 6+numCoeffs] =
   // x1,y1,x2,y2,score,cls,coeff0..N (paired with a separate proto tensor).
   // Cheap pass only — box + score + cls + raw coeffs. The actual mask
@@ -376,7 +500,16 @@
       confThreshold = 0.25,
       iouThreshold = 0.45,
       colors = null,
+      task = "detection",
     } = opts || {};
+
+    // Classification and pose need the declared task, not shape-sniffing:
+    // classification's output has no spatial structure to inspect at all,
+    // and pose's raw/end-to-end shapes are ambiguous against plain
+    // detection's without knowing to look for keypoint channels.
+    if (task === "classification") {
+      return detectClassification(session, imgEl, imgSize, classes, confThreshold);
+    }
 
     const { tensor, r, dw, dh } = letterbox(imgEl, imgSize);
     const feeds = {};
@@ -387,6 +520,11 @@
     const output0 = results[outNames[0]];
     const dims0 = output0.dims;
     const lastDim = dims0[dims0.length - 1];
+
+    if (task === "pose") {
+      return nms(decodePose(output0.data, dims0, r, dw, dh, confThreshold), iouThreshold);
+    }
+
     const isSegmentation = outNames.length > 1;
 
     let boxes;

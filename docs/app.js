@@ -1,7 +1,6 @@
 /* ============================================================
-   ComputerVisionAIHub — catalog logic (vanilla JS, no build step)
+   ComputerVisionAIHub — catalog logic
    Flow:  fetch models.json -> render cards -> filter on input
-   The page never hardcodes models; it all comes from the manifest.
    ============================================================ */
 
 // Module-level state
@@ -16,7 +15,7 @@ const els = {
   search:  document.getElementById("search"),
   filters: document.getElementById("task-filters"),
 
-  // Try-in-browser modal (shared across all cards, filled per model on open)
+  // Try-in-browser modal elements
   tryModal:       document.getElementById("try-modal"),
   tryModalTitle:  document.getElementById("try-modal-title"),
   tryModalClose:  document.getElementById("try-modal-close"),
@@ -41,21 +40,52 @@ const els = {
   tryProgressFill: document.getElementById("try-progress-fill"),
 };
 
-// ---- Try-in-browser state ----
-// Sessions are keyed by onnx URL and loaded lazily on first run, never on page load.
+// Try-in-browser state 
+// Sessions are keyed by onnx URL and loaded  on first run.
 const sessionCache = new Map();
 const tryState = { model: null, imgEl: null, scale: 1, lastDetections: [], triggerEl: null };
 const BOX_COLORS = ["#185FA5", "#0C8567", "#378ADD", "#5DCAA5", "#C4432B", "#B98A1E"];
 const colorForClass = (cls) => BOX_COLORS[cls % BOX_COLORS.length];
-// yolo-web.js decodes plain detection, obb (rotated boxes), and segmentation (masks).
-const SUPPORTED_TRY_TASKS = new Set(["detection", "obb", "segmentation"]);
+// yolo-web.js decodes detection, obb (rotated boxes), segmentation (masks),
+// classification, and pose.
+const SUPPORTED_TRY_TASKS = new Set(["detection", "obb", "segmentation", "classification", "pose"]);
 
-// ---- small helper: escape text before inserting into HTML ----
+// COCO-17 skeleton (0-indexed) for pose visualization — every pose detection
+// shares class "person", so distinguishing color comes from detection index
+// instead of colorForClass (see drawDetections).
+const POSE_SKELETON = [
+  [15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6],
+  [5, 7], [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6],
+];
+const KPT_VISIBLE_THRESHOLD = 0.5;
+
+function drawKeypoints(ctx, keypoints, scale, color) {
+  if (!keypoints || !keypoints.length) return;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  POSE_SKELETON.forEach(([a, b]) => {
+    const pa = keypoints[a], pb = keypoints[b];
+    if (!pa || !pb || pa.score < KPT_VISIBLE_THRESHOLD || pb.score < KPT_VISIBLE_THRESHOLD) return;
+    ctx.beginPath();
+    ctx.moveTo(pa.x * scale, pa.y * scale);
+    ctx.lineTo(pb.x * scale, pb.y * scale);
+    ctx.stroke();
+  });
+  ctx.fillStyle = color;
+  keypoints.forEach((kp) => {
+    if (kp.score < KPT_VISIBLE_THRESHOLD) return;
+    ctx.beginPath();
+    ctx.arc(kp.x * scale, kp.y * scale, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+// small helper: escape text before inserting into HTML 
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-// ---- 1. LOAD ----
+// 1. LOAD 
 function renderSkeletons(count = 6) {
   els.grid.innerHTML = Array.from({ length: count }, () => `
     <div class="model-card skeleton" aria-hidden="true">
@@ -70,7 +100,6 @@ function renderSkeletons(count = 6) {
 async function load() {
   renderSkeletons();
   try {
-    // cache:no-store so contributors see new models without a hard refresh
     const res = await fetch("models.json", { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -84,7 +113,7 @@ async function load() {
   }
 }
 
-// ---- 2. BUILD TASK FILTER PILLS from the data itself ----
+//  2. BUILD TASK FILTER PILLS from the data itself 
 function buildFilters() {
   const tasks = ["all", ...new Set(ALL_MODELS.map((m) => m.task).filter(Boolean))];
   els.filters.innerHTML = tasks
@@ -102,7 +131,7 @@ function buildFilters() {
   });
 }
 
-// ---- 3. FILTER + RENDER ----
+//  3. FILTER + RENDER 
 function render() {
   const q = query.trim().toLowerCase();
   const list = ALL_MODELS.filter((m) => {
@@ -128,9 +157,7 @@ function render() {
   animateMetricBars();
 }
 
-// Bars render at width:0 so the fill transition (see .bar > span in styles.css)
-// has something to animate from; two rAFs ensure the 0% state actually paints
-// before the target width is applied.
+
 function animateMetricBars() {
   const bars = els.grid.querySelectorAll(".bar > span");
   requestAnimationFrame(() => {
@@ -140,7 +167,7 @@ function animateMetricBars() {
   });
 }
 
-// ---- 4. ONE CARD (template per model) ----
+// 4. ONE CARD (template per model) 
 function card(m) {
   const classes = m.classes || [];
   const canTryInBrowser = Boolean(m.onnx) && SUPPORTED_TRY_TASKS.has(m.task || "detection");
@@ -223,13 +250,11 @@ function card(m) {
   </article>`;
 }
 
-// ---- 5. COPY BUTTONS ----
+// 5. COPY BUTTONS 
 const COPY_ICON = `<svg class="copy-icon icon-copy" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 const CHECK_ICON = `<svg class="copy-icon icon-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 function wireCopyButton(btn) {
-  // Idempotent: the same buttons get re-wired every render() call, so skip
-  // re-injecting the icon markup if this button already has it.
   if (!btn.querySelector(".copy-label")) {
     const label = btn.textContent.trim() || "copy";
     btn.innerHTML = `${COPY_ICON}${CHECK_ICON}<span class="copy-label">${esc(label)}</span>`;
@@ -262,7 +287,7 @@ function showState(msg) {
   els.count.textContent = "";
 }
 
-// ---- 6. TRY IN BROWSER (client-side inference via yolo-web.js) ----
+// 6. TRY IN BROWSER (client-side inference via yolo-web.js)
 function wireTryButtons() {
   els.grid.querySelectorAll(".try-btn").forEach((btn) => {
     btn.addEventListener("click", () => openTryModal(btn.dataset.modelId, btn));
@@ -305,7 +330,7 @@ function closeTryModal() {
   }
 }
 
-// Focusable, currently-visible controls inside the modal, in DOM order.
+// Focusable, currently-visible controls inside the modal.
 function getModalFocusable() {
   const selector = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
   return Array.from(els.tryModal.querySelectorAll(selector)).filter((el) => el.offsetParent !== null);
@@ -321,10 +346,7 @@ function clearTryCanvas() {
   els.tryCanvas.height = 0;
 }
 
-// Before an image is set: big placeholder, click-anywhere-to-choose, with the
-// upload/paste icons already available. After: the canvas (image + detections)
-// fills the same box in its place, with an "Upload a new image" label above —
-// mirrors the local Docker UI's image input.
+
 function setUploadState(hasImage) {
   els.tryDrop.classList.toggle("has-image", hasImage);
   els.tryDropEmpty.hidden = hasImage;
@@ -368,23 +390,15 @@ function drawBaseImage() {
 }
 
 // Sessions are cached per onnx URL so switching models or re-running never re-downloads.
-// Models that fail on the GPU backend mid-inference (see runTry) are remembered here so
-// every later run — this session and future opens — goes straight to the CPU backend
-// instead of repeating a doomed WebGPU attempt first.
 const wasmOnlyModels = new Set();
 const sessionCacheKey = (onnxUrl) => (wasmOnlyModels.has(onnxUrl) ? `${onnxUrl}#wasm` : onnxUrl);
 
-// Download progress, keyed by the plain onnx URL (not the cache key, so a
-// wasm-fallback retry still reports against the same UI). fullyLoaded lets
-// prefetchModel skip the progress bar entirely for a model already in cache.
+// Download progress / fullyLoaded signs
 const downloadProgress = new Map();
 const fullyLoaded = new Set();
 
 function reportProgress(onnxUrl, loaded, total) {
   downloadProgress.set(onnxUrl, { loaded, total });
-  // Only touch the DOM if the modal is still showing *this* model — avoids a
-  // stale download (e.g. the modal was closed and reopened on another card)
-  // painting over the currently visible progress bar.
   if (tryState.model && tryState.model.onnx === onnxUrl) {
     updateProgressUI(loaded, total);
   }
@@ -414,8 +428,7 @@ function getSession(onnxUrl) {
 }
 
 // Kicked off the instant "Try in browser" is clicked — the model starts
-// downloading before the user has picked an image, so it's usually ready by
-// the time they do.
+// downloading before the user has picked an image.
 function prefetchModel(m) {
   if (!m.onnx) return;
   if (fullyLoaded.has(m.onnx)) {
@@ -472,14 +485,16 @@ async function attemptRun(m, img, confThreshold) {
     imgSize: m.image_size || 640,
     confThreshold,
     colors: BOX_COLORS,
+    task: m.task || "detection",
   });
 
   tryState.lastDetections = detections;
   drawBaseImage();
   drawDetections(detections);
   fillDetectionsList(detections);
+  const unit = m.task === "classification" ? "prediction" : "detection";
   setTryStatus(
-    `${detections.length} detection${detections.length === 1 ? "" : "s"} at ${Math.round(confThreshold * 100)}% confidence.`
+    `${detections.length} ${unit}${detections.length === 1 ? "" : "s"} at ${Math.round(confThreshold * 100)}% confidence.`
   );
 }
 
@@ -492,10 +507,6 @@ async function runTry() {
   try {
     await attemptRun(m, img, confThreshold);
   } catch (err) {
-    // Session creation can succeed on WebGPU while a specific op still isn't
-    // implemented there, only failing once actually run (e.g. RT-DETR's
-    // MaxPool ceil-mode shape computation on iOS Safari's GPU backend).
-    // First failure per model: fall back to the CPU backend and retry once.
     if (!wasmOnlyModels.has(m.onnx)) {
       wasmOnlyModels.add(m.onnx);
       try {
@@ -520,10 +531,13 @@ function redrawDetections() {
 
 function drawDetections(detections) {
   if (!els.tryShowBoxes.checked) return; // boxes off -> just the plain image underneath
+  // classification displays its results only live in the side list
+  if (tryState.model && tryState.model.task === "classification") return;
 
   const ctx = els.tryCanvas.getContext("2d");
   const scale = tryState.scale || 1;
   const showLabels = els.tryShowLabels.checked;
+  const isPose = tryState.model && tryState.model.task === "pose";
 
   // segmentation masks go down first, so outlines/tags sit on top of them
   detections.forEach((d) => {
@@ -536,8 +550,9 @@ function drawDetections(detections) {
   ctx.font = "600 12px 'JetBrains Mono', monospace";
   ctx.textBaseline = "top";
 
-  detections.forEach((d) => {
-    const color = colorForClass(d.cls);
+  detections.forEach((d, idx) => {
+    // pose detections are all class "person" — color by instance instead of class
+    const color = isPose ? BOX_COLORS[idx % BOX_COLORS.length] : colorForClass(d.cls);
     let tagX, tagY;
 
     if (d.corners) {
@@ -555,14 +570,14 @@ function drawDetections(detections) {
     } else {
       const x1 = d.x1 * scale, y1 = d.y1 * scale, x2 = d.x2 * scale, y2 = d.y2 * scale;
       if (!d.mask) {
-        // plain detection: the mask fill already reads as the shape for segmentation,
-        // so only draw the box outline when there isn't one
         ctx.strokeStyle = color;
         ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
       }
       tagX = x1;
       tagY = Math.max(0, y1 - 16);
     }
+
+    if (isPose) drawKeypoints(ctx, d.keypoints, scale, color);
 
     if (!showLabels) return;
 
@@ -591,15 +606,15 @@ function fillDetectionsList(detections) {
     .join("");
 }
 
-// ---- search input (debounced lightly via input event) ----
+// search input
 els.search.addEventListener("input", (e) => { query = e.target.value; render(); });
 
-// ---- static copy buttons outside the grid (launch panel + install guide), wired once ----
+// static copy buttons outside the grid (launch panel + install guide) 
 const launchCopyBtn = document.getElementById("launch-copy");
 if (launchCopyBtn) wireCopyButton(launchCopyBtn);
 document.querySelectorAll("#install-guide .copy-btn").forEach(wireCopyButton);
 
-// ---- try-in-browser modal chrome, wired once (the modal itself is shared/reused per model) ----
+// try-in-browser modal chrome, wired once (the modal itself is shared/reused per model) 
 if (els.tryModal) {
   els.tryModalClose.addEventListener("click", closeTryModal);
   els.tryModal.addEventListener("click", (e) => {
@@ -702,8 +717,6 @@ if (els.tryModal) {
     if (tryState.imgEl) runTry();
   });
 
-  // labels need boxes to sit on: turning boxes off also turns labels off,
-  // and turning labels back on brings boxes back with it
   els.tryShowBoxes.addEventListener("change", () => {
     if (!els.tryShowBoxes.checked) els.tryShowLabels.checked = false;
     redrawDetections();

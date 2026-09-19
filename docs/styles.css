@@ -1,9 +1,5 @@
 /* ============================================================
    ComputerVisionAIHub — catalog styles
-   Edit the tokens in :root to rebrand. Everything below derives
-   from these. The "signature" of the design is the bounding-box
-   card frame + corner label tab (see .model-card), now in the
-   brand's navy / blue / mint palette (see assets/icon.svg).
    ============================================================ */
 
 :root {
@@ -161,8 +157,7 @@ a { color: var(--box); }
   display: grid; column-gap: 20px; row-gap: 40px; padding-block: 40px 60px;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   align-items: start;
-  /* extra top/row spacing gives the card-tab room to float above each card
-     (see .card-tab) without colliding with the row above or the toolbar */
+
 }
 
 /* ---- THE SIGNATURE: a model card framed like a detection box ---- */
@@ -183,16 +178,13 @@ a { color: var(--box); }
   box-shadow: 0 16px 32px -16px rgba(24,95,165,.35);
 }
 
-/* The corner label tab — mimics YOLO stamping "class conf" right above a
-   box's top-left corner: flush against the border with no gap (like a real
-   detection label), sharp only where it meets the box so it reads as
-   attached rather than a separate floating chip. */
+/* The corner label tab — mimics YOLO stamping "class conf" labels on the top-left of a detection box. */
 .card-tab {
   position: absolute; top: -2px; left: -2px;
   transform: translateY(-100%);
   font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
   color: #fff; background: var(--ink);
-  padding: 4px 10px; border-radius: 6px 6px 6px 0;
+  padding: 4px 10px; border-radius: 6px 6px 6px 6px;
   transition: background .18s;
 }
 .model-card:hover .card-tab { background: var(--box); }
@@ -229,19 +221,18 @@ a { color: var(--box); }
 .card-summary { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
 
 /* ---- hover-to-reveal: specs/metrics/actions stay collapsed until the card
-   is hovered or focused, so the summary view is just image + name + blurb.
-   Only enabled for mouse-like pointers (see media query below) — touch and
-   keyboard-only visitors get everything expanded, since there's no reliable
-   hover for them to trigger the reveal. ---- */
+   is hovered or focused, so the summary view is just image + name */
 .card-hint {
   display: none;
-  font-family: var(--mono); font-size: 0.72rem;
+  font-family: var(--body); font-size: 0.8rem; font-style: italic;
   color: var(--ink-soft);
 }
 .card-extra-inner { display: flex; flex-direction: column; gap: 14px; }
 
 @media (hover: hover) and (pointer: fine) {
   .card-hint { display: block; transition: opacity .2s ease; }
+
+
   .card-extra {
     display: grid;
     grid-template-rows: 0fr;
@@ -328,10 +319,7 @@ a { color: var(--box); }
 .btn:active { transform: translateY(0) scale(.97); }
 .btn:focus-visible { outline: 2px solid var(--box); outline-offset: 1px; }
 
-/* copyable command / URL box, with an optional label above it.
-   The copy button comes first in the markup and stays pinned to the
-   left edge (position: sticky) so it's visible immediately — the
-   command text scrolls underneath it instead of pushing it off-screen. */
+
 .run-group { display: flex; flex-direction: column; gap: 4px; }
 .run-label {
   font-family: var(--mono); font-size: 0.66rem; font-weight: 500;
@@ -465,9 +453,7 @@ a { color: var(--box); }
 
 .modal-note { color: var(--ink-soft); font-size: 0.82rem; margin: 10px 0 16px; }
 
-/* model download progress — shown the instant the modal opens, before the
-   user has even picked an image; reuses the .bar transform-fill pattern
-   from the catalog card metrics (see .bar > span) */
+/* model download progress */
 .try-progress-wrap { margin: 0 0 16px; }
 .try-progress-label {
   display: flex; justify-content: space-between; gap: 10px;
@@ -476,21 +462,14 @@ a { color: var(--box); }
 }
 .try-progress-pct { color: var(--ink); font-weight: 500; flex: none; }
 .try-progress-bar { height: 6px; }
-/* download progress ticks many times a second — a snappier transition than
-   the one-shot card metric bars (.bar > span) keeps it feeling responsive
-   instead of lagging behind the real transfer */
 .try-progress-bar > span { transition-duration: .15s; transition-timing-function: linear; }
 
-/* label only appears once an image has been set, right above the box */
 .try-upload-label {
   font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
   color: var(--ink-soft); text-transform: uppercase; letter-spacing: .03em;
   margin: 0 0 6px;
 }
 
-/* the upload box: a big empty-state placeholder before an image is set,
-   the same box then shows the annotated result canvas in its place —
-   mirrors the local Docker UI's image input (drop / click / paste-from-clipboard) */
 .try-drop {
   position: relative;
   border: 1.5px dashed var(--line); border-radius: 12px;
@@ -521,9 +500,7 @@ a { color: var(--box); }
   display: flex; gap: 6px;
 }
 
-/* setting display: flex/block above wins the cascade over the UA [hidden] rule
-   at equal specificity, so these three need an explicit [hidden] override or
-   the empty placeholder, canvas, and action icons all stay visible at once */
+
 .try-drop-empty[hidden],
 .try-drop .try-canvas[hidden],
 .try-drop-actions[hidden] {

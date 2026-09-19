@@ -5,7 +5,7 @@
     {
       "id": "jetson-nano-detector",
       "name": "Jetson Nano Detector",
-      "summary": "Performs the detection of elements on Jetson Nano.",
+      "summary": "Performs the detection of structure elements on Jetson Nano.",
       "base_model": "yolo26s",
       "task": "detection",
       "classes": [
@@ -42,7 +42,7 @@
     {
       "id": "jetson-nano-detector2",
       "name": "Jetson Nano Detector 2",
-      "summary": "Performs the detection of elements on Jetson Nano.",
+      "summary": "Performs the detection of structure elements on Jetson Nano.",
       "base_model": "yolo26m",
       "task": "detection",
       "classes": [
@@ -78,7 +78,7 @@
     {
       "id": "raspberry-pi-elements-detector",
       "name": "Raspberry Pi elements detector",
-      "summary": "Performs the detection on main elements on Raspberry Pi.",
+      "summary": "Performs the detection of structure elements on Raspberry Pi.",
       "base_model": "yolo26n",
       "task": "detection",
       "classes": [
@@ -116,7 +116,7 @@
     {
       "id": "raspberry-pi-elements-detector-rt-detr",
       "name": "Raspberry Pi elements detector RT-DETR",
-      "summary": "Performs the detection on main elements on Arduino Uno.",
+      "summary": "Performs the detection of structure elements on Raspberry Pi.",
       "base_model": "rtdetr-l",
       "task": "detection",
       "classes": [
@@ -155,7 +155,7 @@
     {
       "id": "arduino-uno-elements-detector",
       "name": "Arduino Uno elements detector",
-      "summary": "Performs the detection on main elements on Arduino Uno.",
+      "summary": "Performs the detection of structure elements on Arduino Uno.",
       "base_model": "yolo26n",
       "task": "detection",
       "classes": [
@@ -189,7 +189,7 @@
     {
       "id": "traffic-vehicle-detection",
       "name": "Traffic Vehicle Detector",
-      "summary": "Detects cars, busses and trucks in the traffic.",
+      "summary": "Detects cars, busses and trucks in the traffic recorded using CCTV facing the traffic.",
       "base_model": "yolo26n",
       "task": "detection",
       "classes": [
@@ -213,7 +213,7 @@
     {
       "id": "traffic-vehicle-detection2",
       "name": "Traffic Vehicle Detector 2",
-      "summary": "Detects cars, busses and trucks in the traffic.",
+      "summary": "Detects cars, busses and trucks in the traffic recorded using CCTV facing the traffic.",
       "base_model": "yolo26s",
       "task": "detection",
       "classes": [
@@ -316,7 +316,7 @@
     {
       "id": "barcode-obb-detector",
       "name": "Barcode detector OBB",
-      "summary": "Performs the barcode detection.",
+      "summary": "Performs the barcode detection using oriented bounding boxes.",
       "base_model": "yolo26n-obb",
       "task": "obb",
       "classes": [
@@ -340,7 +340,7 @@
     {
       "id": "barcode-obb-detector2",
       "name": "Barcode detector OBB 2",
-      "summary": "Performs the barcode detection.",
+      "summary": "Performs the barcode detection using oriented bounding boxes.",
       "base_model": "yolo26m-obb",
       "task": "obb",
       "classes": [
@@ -388,7 +388,7 @@
     {
       "id": "parking-spot-detector",
       "name": "Parking spot detector",
-      "summary": "Detects parking spots and whether cars are on the spots.",
+      "summary": "Detects empty/occupied parking spots.",
       "base_model": "yolo26s-obb",
       "task": "obb",
       "classes": [
@@ -413,7 +413,7 @@
     {
       "id": "parking-spot-detector2",
       "name": "Parking spot detector 2",
-      "summary": "Detects parking spots and whether cars are on the spots.",
+      "summary": "Detects empty/occupied parking spots.",
       "base_model": "yolo26n-obb",
       "task": "obb",
       "classes": [
@@ -439,7 +439,7 @@
     {
       "id": "parking-spot-detector3",
       "name": "Parking spot detector 3",
-      "summary": "Detects parking spots and whether cars are on the spots.",
+      "summary": "Detects empty/occupied parking spots.",
       "base_model": "yolo26s-obb",
       "task": "obb",
       "classes": [
@@ -566,7 +566,7 @@
     {
       "id": "license-plate-ocr-detector-rt-detr",
       "name": "License Plate OCR Detector - RT-DETR",
-      "summary": "Detects license plates in images.",
+      "summary": "Detects numbers and letters on license plates and performs OCR on images.",
       "base_model": "rtdetr-l",
       "task": "detection",
       "classes": [
@@ -684,7 +684,7 @@
     {
       "id": "license-place-ocr-detector2",
       "name": "License plate OCR detector 2",
-      "summary": "Performs OCR on vehicle's license plates.",
+      "summary": "Detects numbers and letters on license plates and performs OCR on images.",
       "base_model": "yolo26n",
       "task": "detection",
       "classes": [
@@ -743,7 +743,7 @@
     {
       "id": "license-place-ocr-detector3",
       "name": "License plate OCR detector 3",
-      "summary": "Performs OCR on vehicle's license plates.",
+      "summary": "Detects numbers and letters on license plates and performs OCR on images.",
       "base_model": "yolo26m",
       "task": "detection",
       "classes": [
